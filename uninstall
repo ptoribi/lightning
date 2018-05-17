@@ -1,0 +1,27 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    version:      0.7 BETA (do NOT use this program in a production environment)           ##
+##                                                                                           ##
+##    description:  uninstaller of the program                                               ##
+##                  --- WARNING!!! ---                                                       ##
+##                  This will delete all the files of the program!, including the            ##
+##                  personalized_functions file!                                             ##
+##                                                                                           ##
+##    usage:        sudo ./uninstall                                                         ##
+##                                                                                           ##
+###############################################################################################
+
+# LIGHTNING_INSTALLATION_PATH -> The default value is usually /usr/local/lightning
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+# SYMLINK_INSTALLATION_PATH -> The default value is usually /usr/local/bin/lightning
+SYMLINK_INSTALLATION_PATH=$(which lightning)
+
+rm -rf $LIGHTNING_INSTALLATION_PATH
+rm -f $SYMLINK_INSTALLATION_PATH

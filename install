@@ -1,0 +1,43 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    version:      0.7 BETA (do NOT use this program in a production environment)           ##
+##                                                                                           ##
+##    description:  installer of the program                                                 ##
+##                                                                                           ##
+##    usage:        sudo ./install                                                           ##
+##                                                                                           ##
+###############################################################################################
+
+# Please, feel free to modify the variable LIGHTNING_INSTALLATION_DIRECTORY accordingly
+# to your system needs, but do NOT add the slash ("/") at the end of the directory.
+# A folder called "lightning" will be created inside this location in order to
+# store the files and libraries needed by the program. The default value is /usr/local
+LIGHTNING_INSTALLATION_DIRECTORY=/usr/local
+
+# Please, feel free to modify the variable SYMLINK_INSTALLATION_DIRECTORY accordingly
+# to your system needs, but do NOT add the slash ("/") at the end of the directory.
+# A symbolic link to the main binary (stored in LIGHTNING_INSTALLATION_DIRECTORY) will be
+# created inside this location. Please ensure this location is included in the
+# PATH variable of your operating system. The default value is /usr/local/bin
+SYMLINK_INSTALLATION_DIRECTORY=/usr/local/bin
+
+# ptoribi: create directory for storing the program
+mkdir -p $LIGHTNING_INSTALLATION_DIRECTORY/lightning
+# ptoribi: enter into the installer folder
+cd $(dirname $(readlink -f $0))
+# ptoribi: copy all the files but the installer and the personalized_functions file to that directory (and overwrite previous versions of the files)
+#cp -rf $(ls | grep -vw "install\|personalized_functions") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
+cp -rf $(ls | grep -vw install) $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
+# ptoribi: copy the personalized_functions file only if it is not already installed (do not overwrite)
+cp -n personalized_functions $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
+# ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
+ln -sf $LIGHTNING_INSTALLATION_DIRECTORY/lightning/lightning-launcher $SYMLINK_INSTALLATION_DIRECTORY/lightning
+
+echo "If no error message was displayed that means that Lightnig was properly installed, please enjoy."

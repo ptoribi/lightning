@@ -1,0 +1,39 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    version:      0.7 BETA (do NOT use this program in a production environment)           ##
+##                                                                                           ##
+##    description:  launcher: ensures that lightning is executed with proper user            ##
+##                  privileges.                                                              ##
+##                                                                                           ##
+##    usage:        sudo ./install                                                           ##
+##                                                                                           ##
+###############################################################################################
+
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+
+# ptoribi: the purpose of "lightning-launcher" is to ensure that the main program
+# is executed by a regular user with "sudo" command. If sudo has already been used
+# for executing lightning-launcher, it just proceeds to execute the main one.
+# Execution of the program directly as root is not supported.
+
+# lightning (symlink) ----> lightning-launcher ----> sudo lightning (main program)
+
+if [ $(logname)!="root" -a $(whoami)!="root" ]
+then
+  # I use "$@" for propagating all the arguments among scripts.
+  sudo $LIGHTNING_INSTALLATION_PATH/lightning "$@"
+elif [ $(logname)!="root" -a $(whoami)=="root" ]
+then
+  # I use "$@" for propagating all the arguments among scripts.
+  $LIGHTNING_INSTALLATION_PATH/lightning "$@"
+elif [ $(logname)=="root" -a $(whoami)=="root" ]
+then
+  echo $(tput setaf 220)[lightning-launcher]:$(tput sgr 0) $(tput setaf 0)$(tput setab 1) Execution of this program directly as root is not supported. $(tput sgr 0)
+fi

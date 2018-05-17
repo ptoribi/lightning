@@ -1,0 +1,198 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    version:      0.7 BETA (do NOT use this program in a production environment)           ##
+##                                                                                           ##
+##    description:  main program: displays menu, starts selected scenario, stops already     ##
+##                  launched scenario or purges the system.                                  ##
+##                                                                                           ##
+###############################################################################################
+
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
+source $LIGHTNING_INSTALLATION_PATH/functions
+source $LIGHTNING_INSTALLATION_PATH/personalized_functions
+
+# usage: explore_scenarios
+# description: explore all the directories in $SCENARIOS_PATH listing all the available scenarios
+# NOTE: this function only supports one directory depth level from $SCENARIOS_PATH
+explore_scenarios() {
+  
+  local NUMBER_DIRECTORIES
+  local DIRECTORY_NAME
+  
+  list_scenarios_in_directory
+  
+  NUMBER_DIRECTORIES=$(ls -l $SCENARIOS_PATH | awk 'NR>1' | grep ^d | awk '{print $9}' | wc -l)
+  for ((i=1; i<=$NUMBER_DIRECTORIES; i++))
+  do
+    DIRECTORY_NAME=$(ls -l $SCENARIOS_PATH | awk 'NR>1' | grep ^d | awk '{print $9}' | sed -n $i'p')
+    list_scenarios_in_directory $DIRECTORY_NAME
+  done
+}
+
+# usage: list_scenarios_in_directory DIRECTORY
+# description: list the available scenarios in the specified directory (XML or direct execution scenario files)
+# example: list_scenarios_in_directory $SCENARIOS_PATH
+list_scenarios_in_directory() {
+
+  local DIRECTORY
+  if [ "$#" -eq 1 ]
+  then
+    DIRECTORY=$SCENARIOS_PATH/$1
+  else
+    DIRECTORY=$SCENARIOS_PATH
+  fi
+  
+  local NUMBER_SCENARIOS_FILES
+  local FILE_NAME           # name of the file, e.g.: scenario.xml
+  local FILE_NAME_EXTENDED  # name of the file + relative path from $SCENARIOS_PATH, e.g.: SubjectName/LaboratorySession_1/scenario.xml
+  local DESCRIPTION
+  
+  NUMBER_SCENARIOS_FILES=$(ls -l $DIRECTORY | awk 'NR>1' | grep -v ^d | awk '{print $9}' | grep -v .xsd | grep -v .pdf | grep -v .tmp | wc -l)
+  if [[ $NUMBER_SCENARIOS_FILES -gt 0 ]]
+  then
+    echo "" # ptoribi: separator line between scenarios of different directory 
+  fi
+  
+  for ((j=1; j<=$NUMBER_SCENARIOS_FILES; j++))
+  do
+    FILE_NAME=$(ls -l $DIRECTORY | awk 'NR>1' | grep -v ^d | awk '{print $9}' | grep -v .xsd | grep -v .pdf | grep -v .tmp | sed -n $j'p')
+    
+    # ptoribi: if the file is an XML file
+    if [[ $FILE_NAME == *.xml ]]
+    then
+      DESCRIPTION=$(xmllint --xpath 'string(/scenario/@description)' $DIRECTORY/$FILE_NAME)
+    fi
+    
+    # ptoribi: if the file is a direct execution file (file without extension)
+    if [[ $FILE_NAME != *.* ]]
+    then
+      # ptoribi: I use cut for removing "# DESCRIPTION:", and tail for removing the following space 
+      DESCRIPTION=$(grep "# DESCRIPTION:" $DIRECTORY/$FILE_NAME | cut -d : -f 2 | tail -c +2)
+    fi
+    
+    if [[ ${#DESCRIPTION} -ne 0 ]] && [[ "$#" -eq 0 ]]
+    then
+      echo "  $(tput setaf 154) ${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
+    fi
+    
+    if [[ ${#DESCRIPTION} -eq 0 ]] && [[ "$#" -eq 0 ]]
+    then
+      echo "  $(tput setaf 154) ${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)[scenario description not available] $(tput sgr 0)"
+    fi
+    
+    if [[ ${#DESCRIPTION} -ne 0 ]] && [[ "$#" -eq 1 ]]
+    then
+      echo "  $(tput setaf 154) $1/${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
+    fi
+    
+    if [[ ${#DESCRIPTION} -eq 0 ]] && [[ "$#" -eq 1 ]]
+    then
+      echo "  $(tput setaf 154) $1/${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)[scenario description not available] $(tput sgr 0)"
+    fi   
+ done
+}
+
+
+# usage: version_header
+# description: shows header displaying version number
+version_header() {
+
+  echo ""
+  echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
+  echo "      $(tput setaf 33)**$(tput setaf 45)    Universidad Carlos III de Madrid (UC3M)    $(tput setaf 33)**$(tput sgr 0)"
+  echo "      $(tput setaf 33)**$(tput setaf 45)              Lightning 0.7 BETA               $(tput setaf 33)**$(tput sgr 0)"
+  echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
+}
+
+# usage: usage_message
+# description: shows usage message of the program and available scenarios
+usage_message() {
+  echo ""
+  echo "$(tput setaf 220)[lightning]$(tput sgr 0) usage:"
+  echo ""
+  echo "  $(tput setaf 6)lightning                  $(tput sgr 0)-> display usage message and list available scenarios"
+  echo "  $(tput setaf 6)lightning stop             $(tput sgr 0)-> close running scenario"
+  echo "  $(tput setaf 6)lightning purge            $(tput sgr 0)-> ONLY use this option in case \"stop\" doesn't work"
+  echo "  $(tput setaf 6)lightning start $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
+  echo ""
+  echo "  Available scenarios:"
+  #list_scenarios_in_directory $SCENARIOS_PATH
+  explore_scenarios
+  echo ""
+  echo "  Your shared folder between host systems is located"
+  echo "  at $(tput setaf 13)$SHARED_FOLDER$(tput sgr 0) in your main system, and will"
+  echo "  be mounted as $(tput setaf 5)/home$(tput sgr 0) inside the simulated host systems."
+  echo ""
+}
+
+#echo $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO is executing lightning, please enjoy!
+
+if [ "$#" -eq 0 ]
+then
+  version_header
+  # Display usage message
+  usage_message
+else
+  # Stop
+  if [ "$#" -eq 1 ] && [ $1 == "stop" ]
+  then
+    lightning_stop
+  # Purge
+  elif [ "$#" -eq 1 ] && [ $1 == "purge" ]
+  then
+    lightning_purge
+  # Start
+  elif [ "$#" -eq 2 ] && [ $1 == "start" ]
+  then
+    if [[ -e $CONTAINERS_CREATED_FILE || -e $NETWORKS_CREATED_FILE ]] && [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
+    then
+      error_message "Another user was running lightning or it wasn't properly closed the last time it was executed"
+      information_message "Purging the system..."
+      lightning_purge
+      if [ $? == 0 ]
+      then
+        information_message "Launching selected scenario..."
+      fi
+    fi
+    # ptoribi: execute scenario and show related .pdf file if present
+    if [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
+    then
+    
+      if [ -e $SCENARIOS_PATH/$2.pdf ]
+      then
+        evince $SCENARIOS_PATH/$2.pdf &
+      fi
+      
+      if [ -e $SCENARIOS_PATH/$2.xml ]
+      then
+        # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
+        # ptoribi: time will measure how much time takes the commmand to complete
+        time read_xml $SCENARIOS_PATH/$2.xml
+        echo ""
+      else
+        # --- LAUNCHING SELECTED SCENARIO, DIRECT FUNCTIONS EXECUTION ---
+        # ptoribi: time will measure how much time the commmand takes to complete
+        time $SCENARIOS_PATH/$2
+        echo ""
+      fi
+      
+    else
+      # Display usage message
+      echo ""
+      error_message "Scenario $2 not found"
+      usage_message
+    fi
+  else
+    echo ""
+    error_message "Command not recognized"
+    usage_message
+  fi
+fi
