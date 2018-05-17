@@ -53,7 +53,7 @@ $ sudo apt-get install git
 ## Install the program
 * **Get the last version of the project**
 ```
-$ git clone https://github.com/ptoribi/lightning-uc3m.git
+$ git clone https://github.com/ptoribi/lightning.git
 ```
 * **Change default locations** (Optional)
 
