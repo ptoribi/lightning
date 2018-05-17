@@ -27,25 +27,25 @@ A complete guide for installing Docker can be found in the official documentatio
 
 On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your distro and follow the instructions.
 
-**brctl** (command line tool for ethernet bridges manipulation)
+* **brctl** (command line tool for ethernet bridges manipulation)
 ```
 $ sudo apt-get install bridge-utils
 ```
-**xmllint** (XML parser)
+* **xmllint** (XML parser)
 ```
 $ sudo apt-get install libxml2-utils
 ```
-**evince** (a regular PDF viewer)
+* **evince** (a regular PDF viewer)
 ```
 $ sudo apt-get install evince
 ```
-**git** (optional, only if you want to use the git command for downloading Lightning)
+* **git** (optional, only if you want to use the git command for downloading Lightning)
 
 Official documentation: https://git-scm.com/download/linux
 ```
 $ sudo apt-get install git
 ```
-**other utilities** that may probably be already installed in your OS:
+* **other utilities** that may probably be already installed in your OS:
 ```
 # apt-get install sudo bash x11-utils libc-bin coreutils iproute2 iptables mawk sed
 ```
