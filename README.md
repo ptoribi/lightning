@@ -1,7 +1,8 @@
 # :zap: lightning-uc3m :zap:
 The simple and lightweight network simulator based on Docker containers
 
-![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png) <!-- .element height="50%" width="50%" -->
+![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png) 
+
 ![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot2.png)
 
 ## About lightning
