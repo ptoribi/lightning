@@ -2,6 +2,7 @@
 The simple and lightweight network simulator based on Docker containers
 
 ![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png)
+![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot2.png)
 
 ## About lightning
 Lightning is a simple and lightweight network simulator based on Docker containers.
