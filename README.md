@@ -1,4 +1,4 @@
-# :zap: lightning-uc3m :zap:
+# :zap: lightning :zap:
 The simple and lightweight network simulator based on Docker containers
 
 ![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png) 
@@ -57,13 +57,13 @@ $ git clone https://github.com/ptoribi/lightning-uc3m.git
 ```
 * **Change default locations** (Optional)
 
-In order to set the location where the application folder and the symlink to the main program will be installed, you can change inside the **lightning-uc3m/install** file the variables **LIGHTNING_INSTALLATION_DIRECTORY** and **SYMLINK_INSTALLATION_DIRECTORY**.
+In order to set the location where the application folder and the symlink to the main program will be installed, you can change inside the **lightning/install** file the variables **LIGHTNING_INSTALLATION_DIRECTORY** and **SYMLINK_INSTALLATION_DIRECTORY**.
 
 Please ensure before installing that those paths are included in your system's PATH variable. If you have no special needs the default values just work well.
 
 * **Install Lightning**
 ```
-$ sudo lightning-uc3m/install
+$ sudo lightning/install
 ```
 
 ## After the installation:
