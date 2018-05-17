@@ -1,7 +1,7 @@
 # :zap: lightning-uc3m :zap:
 The simple and lightweight network simulator based on Docker containers
 
-
+![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png)
 
 ## About lightning
 Lightning is a simple and lightweight network simulator based on Docker containers.
