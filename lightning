@@ -196,6 +196,7 @@ else
   then
     rm -rf /tmp/lightning-tmp 
     mkdir /tmp/lightning-tmp
+    mkdir /tmp/lightning-tmp/lightning
     cp $LIGHTNING_INSTALLATION_PATH/update /tmp/lightning-tmp
     /tmp/lightning-tmp/update
   else
