@@ -107,7 +107,7 @@ version_header() {
   echo ""
   echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
   echo "      $(tput setaf 33)**$(tput setaf 45)    Universidad Carlos III de Madrid (UC3M)    $(tput setaf 33)**$(tput sgr 0)"
-  echo "      $(tput setaf 33)**$(tput setaf 45)              Lightning 0.7 BETA               $(tput setaf 33)**$(tput sgr 0)"
+  echo "      $(tput setaf 33)**$(tput setaf 45)              Lightning 0.8                    $(tput setaf 33)**$(tput sgr 0)"
   echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
 }
 
