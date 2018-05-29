@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# ptoribi: this will restart vtysh (the quagga shell) if the user exits from the main configuration screen by accident typing "exit"
-while true
-do
-	# ptoribi: clears terminal and restarts vtysh (vtysh is a shell, so it is blocking)
-	clear
-	vtysh
-done

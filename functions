@@ -129,7 +129,7 @@ create_host() {
   
   # ptoribi: add the user to group "wireshark" so dumpcap could be executed by regular users
   docker exec --user=root $HOST_NAME usermod -a -G wireshark $USER_BEHIND_SUDO
-  docker cp $LIGHTNING_INSTALLATION_PATH/other/bash_persistent $HOST_NAME:/bin
+  #docker cp $LIGHTNING_INSTALLATION_PATH/other/bash_persistent $HOST_NAME:/bin
   docker exec --user=root $HOST_NAME bash -c "echo 127.0.1.1 $HOST_NAME_LONG >> /etc/hosts"
   # ptoribi: allow that user to execute sudo without writting the password each time
   docker exec --user=root $HOST_NAME bash -c "echo $USER_BEHIND_SUDO ALL=\(ALL\) NOPASSWD: ALL >> /etc/sudoers"
@@ -168,7 +168,7 @@ create_router() {
 
   # ptoribi: the quagga configuration files will be copied to the router container and stored in /etc/quagga
   docker cp $QUAGGA_CONFIG_FILES/quagga $ROUTER_NAME:/etc
-  docker cp $LIGHTNING_INSTALLATION_PATH/other/vtysh_persistent $ROUTER_NAME:/usr/bin
+  #docker cp $LIGHTNING_INSTALLATION_PATH/other/vtysh_persistent $ROUTER_NAME:/usr/bin
   # ptoribi: all the config files must be owned by user and group "quagga" in order to work
   docker exec --user=root $ROUTER_NAME bash -c "chown -R quagga:quagga /etc/quagga"
   # ptoribi: the vtysh config file must be owned by user "quagga" and group "quaggavty" in order to work
