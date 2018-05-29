@@ -125,7 +125,7 @@ create_host() {
 
   # ptoribi: create user inside the container with same uid:gid as the one executing this program
   docker exec --user=root $HOST_NAME groupadd --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $GROUP_OF_USER_BEHIND_SUDO
-  docker exec --user=root $HOST_NAME useradd -m --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $USER_BEHIND_SUDO
+  docker exec --user=root $HOST_NAME useradd --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $USER_BEHIND_SUDO
   
   # ptoribi: add the user to group "wireshark" so dumpcap could be executed by regular users
   docker exec --user=root $HOST_NAME usermod -a -G wireshark $USER_BEHIND_SUDO
@@ -327,7 +327,7 @@ display_host() {
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/ssh start" >> /dev/null
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> /dev/null
 
-  xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent" &
+  xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
 }
 
 
