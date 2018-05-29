@@ -121,11 +121,11 @@ create_host() {
   chown $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO $SHARED_FOLDER
   # ptoribi: run container with X-org forwarding support (I will try to make the same stuff but with wayland later) and $SHARED_FOLDER mounted as the home of the container
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $HOST_NAME" after stop
-  docker run --privileged -t -d --rm --sysctl net.ipv6.conf.all.disable_ipv6=0 -e DISPLAY=unix$DISPLAY -v $SHARED_FOLDER:/home/ -v /tmp/.X11-unix:/tmp/.X11-unix --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --cap-add=NET_ADMIN $DOCKER_IMAGE_host >> /dev/null
+  docker run --privileged -t -d --rm --sysctl net.ipv6.conf.all.disable_ipv6=0 -e DISPLAY=unix$DISPLAY -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO -v /tmp/.X11-unix:/tmp/.X11-unix --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --cap-add=NET_ADMIN $DOCKER_IMAGE_host >> /dev/null
 
   # ptoribi: create user inside the container with same uid:gid as the one executing this program
   docker exec --user=root $HOST_NAME groupadd --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $GROUP_OF_USER_BEHIND_SUDO
-  docker exec --user=root $HOST_NAME useradd --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $USER_BEHIND_SUDO
+  docker exec --user=root $HOST_NAME useradd -m --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $USER_BEHIND_SUDO
   
   # ptoribi: add the user to group "wireshark" so dumpcap could be executed by regular users
   docker exec --user=root $HOST_NAME usermod -a -G wireshark $USER_BEHIND_SUDO
