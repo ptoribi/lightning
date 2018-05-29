@@ -14,13 +14,15 @@
 ##                                                                                           ##
 ###############################################################################################
 
+source $LIGHTNING_INSTALLATION_PATH/variables.conf
+
 # Constants
 USER_BEHIND_SUDO=$(logname)
 GROUP_OF_USER_BEHIND_SUDO=$(id -g -n $USER_BEHIND_SUDO)
 # ptoribi: getent also works with remote authentication servers (LDAP, etc.)
 # from "getent passwd" output: user:x:1000:1000:user,,,:/home/user:/bin/bash -> I extract the 6th field delimited by ":" (user's home path)
 USER_BEHIND_SUDO_HOME_PATH=$(getent passwd $USER_BEHIND_SUDO | cut -d : -f 6)
-SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/lightning-shared-folder
+SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
 
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
@@ -28,11 +30,6 @@ XSD_FILE=$SCENARIOS_PATH/lightning-xml-schema.xsd
 QUAGGA_CONFIG_FILES=$LIGHTNING_INSTALLATION_PATH/quagga-config-files
 CONTAINERS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/containers-created.log
 NETWORKS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/networks-created.log
-
-# Docker repositories 
-DOCKER_IMAGE_host="ptoribi/uc3m:host"
-DOCKER_IMAGE_router="ptoribi/uc3m:router"
-
 
 # description: disables ipv6 for one interface in the specified container (container should have been started in "privileged" mode)
 # usage: disable_ipv6 CONTAINER_NAME INTERFACE_NAME
