@@ -13,6 +13,7 @@
 ##                                                                                           ##
 ###############################################################################################
 
+USER_BEHIND_SUDO=$(logname)
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
 source $LIGHTNING_INSTALLATION_PATH/functions
@@ -129,7 +130,7 @@ usage_message() {
   echo ""
   echo "  Your shared folder between host systems is located"
   echo "  at $(tput setaf 13)$SHARED_FOLDER$(tput sgr 0) in your main system, and will"
-  echo "  be mounted as $(tput setaf 5)/home$(tput sgr 0) inside the simulated host systems."
+  echo "  be mounted as $(tput setaf 5)/home/$USER_BEHIND_SUDO$(tput sgr 0) inside the simulated host systems."
   echo ""
 }
 
