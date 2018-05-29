@@ -14,8 +14,6 @@
 ##                                                                                           ##
 ###############################################################################################
 
-source $LIGHTNING_INSTALLATION_PATH/variables.conf
-
 # Constants
 USER_BEHIND_SUDO=$(logname)
 GROUP_OF_USER_BEHIND_SUDO=$(id -g -n $USER_BEHIND_SUDO)
@@ -25,6 +23,7 @@ USER_BEHIND_SUDO_HOME_PATH=$(getent passwd $USER_BEHIND_SUDO | cut -d : -f 6)
 SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
 
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+source $LIGHTNING_INSTALLATION_PATH/variables.conf
 SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
 XSD_FILE=$SCENARIOS_PATH/lightning-xml-schema.xsd
 QUAGGA_CONFIG_FILES=$LIGHTNING_INSTALLATION_PATH/quagga-config-files

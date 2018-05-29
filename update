@@ -15,11 +15,22 @@
 ##                                                                                           ##
 ###############################################################################################
 
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+source $LIGHTNING_INSTALLATION_PATH/variables.conf
+
+# ptoribi: update the Docker images from DockerHub
+docker pull $DOCKER_IMAGE_host
+docker pull $DOCKER_IMAGE_router
+
+# ptoribi: prepare a folder in /tmp
+rm -rf /tmp/lightning-tmp 
+mkdir /tmp/lightning-tmp
+    
 # ptoribi: the last version of Lightning will be downloaded from GitHub
-git clone https://github.com/ptoribi/lightning.git /tmp/lightning-tmp/lightning
+git clone $GITHUB /tmp/lightning-tmp
 
 # ptoribi: the version currently installed in the system will be uninstalled
 sudo $(dirname $(readlink -f $(which lightning)))/uninstall
 
 # ptoribi: the new version will be installed
-sudo /tmp/lightning-tmp/lightning/install
+sudo /tmp/lightning-tmp/install
