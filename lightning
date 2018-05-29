@@ -122,6 +122,7 @@ usage_message() {
   echo "  $(tput setaf 6)lightning stop             $(tput sgr 0)-> close running scenario"
   echo "  $(tput setaf 6)lightning purge            $(tput sgr 0)-> ONLY use this option in case \"stop\" doesn't work"
   echo "  $(tput setaf 6)lightning start $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
+  echo "  $(tput setaf 6)lightning update           $(tput sgr 0)-> will update Lightning to the latest version available"
   echo ""
   echo "  Available scenarios:"
   #list_scenarios_in_directory $SCENARIOS_PATH
@@ -190,6 +191,13 @@ else
       error_message "Scenario $2 not found"
       usage_message
     fi
+  # Update
+  elif [ "$#" -eq 1 ] && [ $1 == "update" ]
+  then
+    rm -rf /tmp/lightning-tmp 
+    mkdir /tmp/lightning-tmp
+    cp $LIGHTNING_INSTALLATION_PATH/update /tmp/lightning-tmp
+    /tmp/lightning-tmp/update
   else
     echo ""
     error_message "Command not recognized"

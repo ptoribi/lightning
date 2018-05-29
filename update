@@ -1,0 +1,25 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    version:      0.7 BETA (do NOT use this program in a production environment)           ##
+##                                                                                           ##
+##    description:  updater of the program                                                   ##
+##                                                                                           ##
+##    usage:        sudo ./uninstall                                                         ##
+##                                                                                           ##
+###############################################################################################
+
+# ptoribi: the last version of Lightning will be downloaded from GitHub
+git clone https://github.com/ptoribi/lightning.git
+
+# ptoribi: the version currently installed in the system will be uninstalled
+sudo $(dirname $(readlink -f $(which lightning)))/uninstall
+
+# ptoribi: the new version will be installed
+sudo lightning/install
