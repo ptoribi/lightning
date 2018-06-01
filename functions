@@ -158,7 +158,7 @@ create_router() {
   local ROUTER_NAME_LONG=$2
 
   # ptoribi: run container in privileged mode (is this really necessary? I should try givin only specific capabilities in the future)
-  docker run --privileged -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none $DOCKER_IMAGE_router >> /dev/null
+  docker run --privileged -t -d --rm --sysctl net.ipv6.conf.all.disable_ipv6=0 --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none $DOCKER_IMAGE_router >> /dev/null
 
   # ptoribi: create links for accessing the network namespace
   local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $ROUTER_NAME`
