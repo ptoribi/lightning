@@ -21,7 +21,12 @@ source $LIGHTNING_INSTALLATION_PATH/variables.conf
 docker pull $DOCKER_IMAGE_host
 docker pull $DOCKER_IMAGE_router
 
-# ptoribi: prepare a folder in /tmp
+# ptoribi: prepare a folder in /tmp for saving files contained in scenarios-local
+rm -rf /tmp/scenarios-local-tmp 
+mkdir /tmp/scenarios-local-tmp
+cp $LIGHTNING_INSTALLATION_PATH/scenarios-local /tmp/scenarios-local-tmp 
+
+# ptoribi: prepare a folder in /tmp for storing GitHub temp files
 rm -rf /tmp/lightning-tmp 
 mkdir /tmp/lightning-tmp
     
@@ -31,10 +36,14 @@ git clone $GITHUB /tmp/lightning-tmp
 if [ $? == 0 ]
 then
   # ptoribi: the version currently installed in the system will be uninstalled
-  sudo $(dirname $(readlink -f $(which lightning)))/uninstall
+  $(dirname $(readlink -f $(which lightning)))/uninstall
 
   # ptoribi: the new version will be installed
-  sudo /tmp/lightning-tmp/install
+  /tmp/lightning-tmp/install
+  
+  # ptoribi: restore scenarios-local
+  cp /tmp/scenarios-local-tmp/* $LIGHTNING_INSTALLATION_PATH/scenarios-local
+  
 else
   echo $(tput setaf 0)$(tput setab 1) "Error while getting lightning from GitHub, are you connected to the internet?" $(tput sgr 0)
 fi
