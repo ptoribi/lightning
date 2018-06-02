@@ -35,6 +35,14 @@ git clone $GITHUB /tmp/lightning-tmp
 
 if [ $? == 0 ]
 then
+
+  SHARED_FOLDER_NAME=$(grep "SHARED_FOLDER_NAME=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
+  if [[ ${#SHARED_FOLDER_NAME} -ne 0 ]]
+  then
+    echo $SHARED_FOLDER_NAME
+  fi
+      
+      
   # ptoribi: the version currently installed in the system will be uninstalled
   $(dirname $(readlink -f $(which lightning)))/uninstall
 

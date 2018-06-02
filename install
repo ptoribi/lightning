@@ -34,9 +34,8 @@ then
   mkdir -p $LIGHTNING_INSTALLATION_DIRECTORY/lightning
   # ptoribi: enter into the installer folder
   cd $(dirname $(readlink -f $0))
-  # ptoribi: copy all the files but the installer and the personalized_functions file to that directory (and overwrite previous versions of the files)
-  cp -rf $(ls | grep -vw "install\|personalized_functions\screenshots") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
-  #cp -rf $(ls | grep -vw install) $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
+  # ptoribi: copy all the files but the installer and the screenshots to that directory (and overwrite previous versions of the files)
+  cp -rf $(ls | grep -vw "install\personalized_functions\screenshots") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
   # ptoribi: copy the personalized_functions file only if it is not already installed (do not overwrite)
   cp -n personalized_functions $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
   # ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
