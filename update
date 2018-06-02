@@ -24,7 +24,7 @@ docker pull $DOCKER_IMAGE_router
 # ptoribi: prepare a folder in /tmp for saving files contained in scenarios-local
 rm -rf /tmp/scenarios-local-tmp 
 mkdir /tmp/scenarios-local-tmp
-cp $LIGHTNING_INSTALLATION_PATH/scenarios-local /tmp/scenarios-local-tmp 
+cp $LIGHTNING_INSTALLATION_PATH/scenarios-local/* /tmp/scenarios-local-tmp 
 
 # ptoribi: prepare a folder in /tmp for storing GitHub temp files
 rm -rf /tmp/lightning-tmp 
