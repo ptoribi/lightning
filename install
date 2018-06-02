@@ -45,10 +45,13 @@ then
   echo $(tput setaf 0)$(tput setab 2) "Lightnig was properly installed" $(tput sgr 0)
   
   # ptoribi: get the last version of the scenarios from the GitHub repository
-  source $LIGHTNING_INSTALLATION_DIRECTORY/variables.conf
-  git clone $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/scenarios
-  if [ $? != 0 ]
+  rm -rf $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
+  source $LIGHTNING_INSTALLATION_DIRECTORY/lightning/variables.conf
+  git clone $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
+  if [ $? == 0 ]
   then
+    echo $(tput setaf 0)$(tput setab 2) "Scenarios were properly installed" $(tput sgr 0)
+  else
     echo $(tput setaf 0)$(tput setab 1) "Error while getting scenarios from GitHub, are you connected to the internet?" $(tput sgr 0)
   fi
   
