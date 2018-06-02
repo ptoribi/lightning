@@ -16,6 +16,7 @@
 USER_BEHIND_SUDO=$(logname)
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
+SCENARIOS_PATH_LOCAL=$LIGHTNING_INSTALLATION_PATH/scenarios-local
 source $LIGHTNING_INSTALLATION_PATH/functions
 source $LIGHTNING_INSTALLATION_PATH/personalized_functions
 
@@ -27,28 +28,31 @@ explore_scenarios() {
   local NUMBER_DIRECTORIES
   local DIRECTORY_NAME
   
-  list_scenarios_in_directory
+  list_scenarios_in_directory $SCENARIOS_PATH_LOCAL
+  
+  NUMBER_DIRECTORIES=$(ls -l $SCENARIOS_PATH_LOCAL | awk 'NR>1' | grep ^d | awk '{print $9}' | wc -l)
+  for ((i=1; i<=$NUMBER_DIRECTORIES; i++))
+  do
+    DIRECTORY_NAME=$(ls -l $SCENARIOS_PATH_LOCAL | awk 'NR>1' | grep ^d | awk '{print $9}' | sed -n $i'p')
+    list_scenarios_in_directory $SCENARIOS_PATH_LOCAL/$DIRECTORY_NAME
+  done
+  
+  list_scenarios_in_directory $SCENARIOS_PATH
   
   NUMBER_DIRECTORIES=$(ls -l $SCENARIOS_PATH | awk 'NR>1' | grep ^d | awk '{print $9}' | wc -l)
   for ((i=1; i<=$NUMBER_DIRECTORIES; i++))
   do
     DIRECTORY_NAME=$(ls -l $SCENARIOS_PATH | awk 'NR>1' | grep ^d | awk '{print $9}' | sed -n $i'p')
-    list_scenarios_in_directory $DIRECTORY_NAME
+    list_scenarios_in_directory $SCENARIOS_PATH $DIRECTORY_NAME
   done
 }
 
 # usage: list_scenarios_in_directory DIRECTORY
 # description: list the available scenarios in the specified directory (XML or direct execution scenario files)
-# example: list_scenarios_in_directory $SCENARIOS_PATH
+# example: list_scenarios_in_directory $PATH $DIRECTORY
 list_scenarios_in_directory() {
 
-  local DIRECTORY
-  if [ "$#" -eq 1 ]
-  then
-    DIRECTORY=$SCENARIOS_PATH/$1
-  else
-    DIRECTORY=$SCENARIOS_PATH
-  fi
+  local DIRECTORY=$1/$2
   
   local NUMBER_SCENARIOS_FILES
   local FILE_NAME           # name of the file, e.g.: scenario.xml
@@ -76,27 +80,18 @@ list_scenarios_in_directory() {
     then
       # ptoribi: I use cut for removing "# DESCRIPTION:", and tail for removing the following space 
       DESCRIPTION=$(grep "# DESCRIPTION:" $DIRECTORY/$FILE_NAME | cut -d : -f 2 | tail -c +2)
+      if [[ ${#DESCRIPTION} -eq 0 ]]
+      then
+        DESCRIPTION="[scenario description not available]"
+      fi
     fi
     
-    if [[ ${#DESCRIPTION} -ne 0 ]] && [[ "$#" -eq 0 ]]
+    if [ "$#" -eq 2 ]
     then
+      echo "  $(tput setaf 154) $2/${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
+    else
       echo "  $(tput setaf 154) ${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
     fi
-    
-    if [[ ${#DESCRIPTION} -eq 0 ]] && [[ "$#" -eq 0 ]]
-    then
-      echo "  $(tput setaf 154) ${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)[scenario description not available] $(tput sgr 0)"
-    fi
-    
-    if [[ ${#DESCRIPTION} -ne 0 ]] && [[ "$#" -eq 1 ]]
-    then
-      echo "  $(tput setaf 154) $1/${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
-    fi
-    
-    if [[ ${#DESCRIPTION} -eq 0 ]] && [[ "$#" -eq 1 ]]
-    then
-      echo "  $(tput setaf 154) $1/${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)[scenario description not available] $(tput sgr 0)"
-    fi   
  done
 }
 
@@ -153,7 +148,7 @@ else
   # Start
   elif [ "$#" -eq 2 ] && [ $1 == "start" ]
   then
-    if [[ -e $CONTAINERS_CREATED_FILE || -e $NETWORKS_CREATED_FILE ]] && [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
+    if [[ -e $CONTAINERS_CREATED_FILE || -e $NETWORKS_CREATED_FILE ]] && [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml || -e $SCENARIOS_PATH_LOCAL/$2 || -e $SCENARIOS_PATH_LOCAL/$2.xml ]]
     then
       error_message "Another user was running lightning or it wasn't properly closed the last time it was executed"
       information_message "Purging the system..."
@@ -163,7 +158,7 @@ else
         information_message "Launching selected scenario..."
       fi
     fi
-    # ptoribi: execute scenario and show related .pdf file if present
+    # ptoribi: execute scenario and show related .pdf file if present in "scenarios"
     if [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
     then
     
@@ -185,6 +180,27 @@ else
         echo ""
       fi
       
+    # ptoribi: execute scenario and show related .pdf file if present in "scenarios-local"
+    elif [[ -e $SCENARIOS_PATH_LOCAL/$2 || -e $SCENARIOS_PATH_LOCAL/$2.xml ]]
+    then
+      if [ -e $SCENARIOS_PATH_LOCAL/$2.pdf ]
+      then
+        evince $SCENARIOS_PATH_LOCAL/$2.pdf &
+      fi
+      
+      if [ -e $SCENARIOS_PATH_LOCAL/$2.xml ]
+      then
+        # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
+        # ptoribi: time will measure how much time takes the commmand to complete
+        time read_xml $SCENARIOS_PATH_LOCAL/$2.xml
+        echo ""
+      else
+        # --- LAUNCHING SELECTED SCENARIO, DIRECT FUNCTIONS EXECUTION ---
+        # ptoribi: time will measure how much time the commmand takes to complete
+        time $SCENARIOS_PATH_LOCAL/$2
+        echo ""
+      fi
+  
     else
       # Display usage message
       echo ""

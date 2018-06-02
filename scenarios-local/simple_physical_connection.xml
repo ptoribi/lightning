@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<scenario description="Example: scenario with one PC connected to the physical host interface eth1"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="lightning-xml-schema.xsd">
+
+  <container name="host" type="host">
+    <interface name="phys" enable_ipv6="yes" link_local_ipv6="no" connected_to_physical_interface="eth1"/>
+  </container>
+  
+</scenario>
