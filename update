@@ -24,7 +24,7 @@ docker pull $DOCKER_IMAGE_router
 # ptoribi: prepare a folder in /tmp for saving files contained in scenarios-local
 rm -rf /tmp/scenarios-local-tmp 
 mkdir /tmp/scenarios-local-tmp
-cp $LIGHTNING_INSTALLATION_PATH/scenarios-local/* /tmp/scenarios-local-tmp >> /dev/null
+cp -r $LIGHTNING_INSTALLATION_PATH/scenarios-local /tmp
 
 # ptoribi: prepare a folder in /tmp for storing GitHub temp files
 rm -rf /tmp/lightning-tmp 
@@ -42,7 +42,7 @@ then
   /tmp/lightning-tmp/install
   
   # ptoribi: restore scenarios-local
-  cp /tmp/scenarios-local-tmp/* $LIGHTNING_INSTALLATION_PATH/scenarios-local >> /dev/null
+  cp -r /tmp/scenarios-local-tmp $LIGHTNING_INSTALLATION_PATH
   
 else
   echo $(tput setaf 0)$(tput setab 1) "Error while getting lightning from GitHub, are you connected to the internet?" $(tput sgr 0)
