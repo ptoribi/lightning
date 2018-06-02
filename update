@@ -42,7 +42,7 @@ then
   /tmp/lightning-tmp/install
   
   # ptoribi: restore scenarios-local
-  cp /tmp/scenarios-local-tmp $LIGHTNING_INSTALLATION_PATH/scenarios-local
+  cp -r /tmp/scenarios-local-tmp $LIGHTNING_INSTALLATION_PATH/scenarios-local
   
 else
   echo $(tput setaf 0)$(tput setab 1) "Error while getting lightning from GitHub, are you connected to the internet?" $(tput sgr 0)
