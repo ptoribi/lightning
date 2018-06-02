@@ -45,7 +45,7 @@ then
   echo $(tput setaf 0)$(tput setab 2) "Lightnig was properly installed" $(tput sgr 0)
   
   # ptoribi: get the last version of the scenarios from the GitHub repository
-  source LIGHTNING_INSTALLATION_DIRECTORY/variables.conf
+  source $LIGHTNING_INSTALLATION_DIRECTORY/variables.conf
   git clone $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/scenarios
   if [ $? != 0 ]
   then
