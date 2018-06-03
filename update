@@ -48,28 +48,28 @@ then
   if [[ ${#STRING_DOCKER_IMAGE_host} -ne 0 ]]
   then
     sed -i "s@DOCKER_IMAGE_host.*@$STRING_DOCKER_IMAGE_host@" /tmp/lightning-tmp/variables.conf
-    echo 2
+    echo $STRING_DOCKER_IMAGE_host
   fi
   
   STRING_DOCKER_IMAGE_router=$(grep "DOCKER_IMAGE_router=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_DOCKER_IMAGE_router} -ne 0 ]]
   then
     sed -i "s@DOCKER_IMAGE_router.*@$STRING_DOCKER_IMAGE_router@" /tmp/lightning-tmp/variables.conf
-    echo 3
+    echo $STRING_DOCKER_IMAGE_router
   fi
   
   STRING_GITHUB=$(grep "GITHUB=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_GITHUB} -ne 0 ]]
   then
     sed -i "s@GITHUB.*@$STRING_GITHUB@" /tmp/lightning-tmp/variables.conf
-    echo 4
+    echo $STRING_GITHUB
   fi
   
   STRING_GITHUB_SCENARIOS=$(grep "GITHUB_SCENARIOS=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_GITHUB_SCENARIOS} -ne 0 ]]
   then
     sed -i "s@GITHUB_SCENARIOS.*@$STRING_GITHUB_SCENARIOS@" /tmp/lightning-tmp/variables.conf
-    echo 5
+    echo $STRING_GITHUB_SCENARIOS
   fi
       
   # ptoribi: the version currently installed in the system will be uninstalled
