@@ -41,35 +41,35 @@ then
   if [[ ${#STRING_SHARED_FOLDER_NAME} -ne 0 ]]
   then
     sed -i -e "s@SHARED_FOLDER_NAME.*@$STRING_SHARED_FOLDER_NAME@" /tmp/lightning-tmp/variables.conf
-    echo $STRING_SHARED_FOLDER_NAME
+    #echo $STRING_SHARED_FOLDER_NAME
   fi
   
   STRING_DOCKER_IMAGE_host=$(grep "DOCKER_IMAGE_host=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
   if [[ ${#STRING_DOCKER_IMAGE_host} -ne 0 ]]
   then
     sed -i "s@DOCKER_IMAGE_host=.*@$STRING_DOCKER_IMAGE_host@" /tmp/lightning-tmp/variables.conf
-    echo $STRING_DOCKER_IMAGE_host
+    #echo $STRING_DOCKER_IMAGE_host
   fi
   
   STRING_DOCKER_IMAGE_router=$(grep "DOCKER_IMAGE_router=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
   if [[ ${#STRING_DOCKER_IMAGE_router} -ne 0 ]]
   then
     sed -i "s@DOCKER_IMAGE_router=.*@$STRING_DOCKER_IMAGE_router@" /tmp/lightning-tmp/variables.conf
-    echo $STRING_DOCKER_IMAGE_router
+    #echo $STRING_DOCKER_IMAGE_router
   fi
   
   STRING_GITHUB=$(grep "GITHUB=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
   if [[ ${#STRING_GITHUB} -ne 0 ]]
   then
     sed -i "s@GITHUB=.*@$STRING_GITHUB@" /tmp/lightning-tmp/variables.conf
-    echo $STRING_GITHUB
+    #echo $STRING_GITHUB
   fi
   
   STRING_GITHUB_SCENARIOS=$(grep "GITHUB_SCENARIOS=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
   if [[ ${#STRING_GITHUB_SCENARIOS} -ne 0 ]]
   then
     sed -i "s@GITHUB_SCENARIOS=.*@$STRING_GITHUB_SCENARIOS@" /tmp/lightning-tmp/variables.conf
-    echo $STRING_GITHUB_SCENARIOS
+    #echo $STRING_GITHUB_SCENARIOS
   fi
       
   # ptoribi: the version currently installed in the system will be uninstalled
