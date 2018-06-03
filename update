@@ -24,9 +24,13 @@ docker pull $DOCKER_IMAGE_router
 # ptoribi: prepare a folder in /tmp for saving files contained in scenarios-local
 rm -rf /tmp/scenarios-local-tmp 
 mkdir /tmp/scenarios-local-tmp
+# ptoribi: if scenarios-local is populated, save those files
 if [[ $(ls -l $LIGHTNING_INSTALLATION_PATH/scenarios-local | awk 'NR>1' | wc -l) -gt 0 ]]; then
   cp -r $LIGHTNING_INSTALLATION_PATH/scenarios-local/* /tmp/scenarios-local-tmp
 fi
+
+# ptoribi: save the file personalized_functions
+cp $LIGHTNING_INSTALLATION_PATH/personalized_functions /tmp/personalized_functions-tmp
 
 # ptoribi: prepare a folder in /tmp for storing GitHub temp files
 rm -rf /tmp/lightning-tmp 
@@ -84,6 +88,9 @@ then
   if [[ $(ls -l /tmp/scenarios-local-tmp | awk 'NR>1' | wc -l) -gt 0 ]]; then
     cp -r /tmp/scenarios-local-tmp/* $LIGHTNING_INSTALLATION_PATH/scenarios-local
   fi
+  
+  # ptoribi: restore personalized_functions
+  cp /tmp/personalized_functions-tmp $LIGHTNING_INSTALLATION_PATH/personalized_functions
   
 else
   echo $(tput setaf 0)$(tput setab 1) "Error while getting lightning from GitHub, are you connected to the internet?" $(tput sgr 0)
