@@ -45,6 +45,7 @@ then
   
   # ptoribi: get the last version of the scenarios from the GitHub repository
   rm -rf $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
+  mkdir $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
   source $LIGHTNING_INSTALLATION_DIRECTORY/lightning/variables.conf
   git clone $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
   if [ $? == 0 ]

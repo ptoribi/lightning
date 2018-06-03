@@ -72,7 +72,6 @@ then
     echo 5
   fi
       
-      
   # ptoribi: the version currently installed in the system will be uninstalled
   $(dirname $(readlink -f $(which lightning)))/uninstall
 
