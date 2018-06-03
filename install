@@ -48,6 +48,7 @@ then
   mkdir $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
   source $LIGHTNING_INSTALLATION_DIRECTORY/lightning/variables.conf
   git clone $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
+  sleep 15
   if [ $? == 0 ]
   then
     echo $(tput setaf 0)$(tput setab 2) "Scenarios were properly installed" $(tput sgr 0)
