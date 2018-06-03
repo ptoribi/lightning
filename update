@@ -79,7 +79,7 @@ then
   fi
       
   # ptoribi: the version currently installed in the system will be uninstalled
-  $(dirname $(readlink -f $(which lightning)))/uninstall
+  $LIGHTNING_INSTALLATION_PATH/uninstall
 
   # ptoribi: the new version will be installed
   /tmp/lightning-tmp/install
