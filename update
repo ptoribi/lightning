@@ -40,35 +40,35 @@ then
   STRING_SHARED_FOLDER_NAME=$(grep "SHARED_FOLDER_NAME=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_SHARED_FOLDER_NAME} -ne 0 ]]
   then
-    sed -i -e "s@SHARED_FOLDER_NAME.*@SHARED_FOLDER_NAME=$STRING_SHARED_FOLDER_NAME@" /tmp/lightning-tmp/variables.conf
+    sed -i -e "s@SHARED_FOLDER_NAME.*@$STRING_SHARED_FOLDER_NAME@" /tmp/lightning-tmp/variables.conf
     echo $STRING_SHARED_FOLDER_NAME
   fi
   
   STRING_DOCKER_IMAGE_host=$(grep "DOCKER_IMAGE_host=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_DOCKER_IMAGE_host} -ne 0 ]]
   then
-    sed -i "s@DOCKER_IMAGE_host.*@DOCKER_IMAGE_host=$STRING_DOCKER_IMAGE_host@" /tmp/lightning-tmp/variables.conf
+    sed -i "s@DOCKER_IMAGE_host.*@$STRING_DOCKER_IMAGE_host@" /tmp/lightning-tmp/variables.conf
     echo 2
   fi
   
   STRING_DOCKER_IMAGE_router=$(grep "DOCKER_IMAGE_router=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_DOCKER_IMAGE_router} -ne 0 ]]
   then
-    sed -i "s@DOCKER_IMAGE_router.*@DOCKER_IMAGE_router=$STRING_DOCKER_IMAGE_router@" /tmp/lightning-tmp/variables.conf
+    sed -i "s@DOCKER_IMAGE_router.*@$STRING_DOCKER_IMAGE_router@" /tmp/lightning-tmp/variables.conf
     echo 3
   fi
   
   STRING_GITHUB=$(grep "GITHUB=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_GITHUB} -ne 0 ]]
   then
-    sed -i "s@GITHUB.*@GITHUB=$STRING_GITHUB@" /tmp/lightning-tmp/variables.conf
+    sed -i "s@GITHUB.*@$STRING_GITHUB@" /tmp/lightning-tmp/variables.conf
     echo 4
   fi
   
   STRING_GITHUB_SCENARIOS=$(grep "GITHUB_SCENARIOS=" $LIGHTNING_INSTALLATION_PATH/variables.conf | cut -d \" -f 2)
   if [[ ${#STRING_GITHUB_SCENARIOS} -ne 0 ]]
   then
-    sed -i "s@GITHUB_SCENARIOS.*@GITHUB_SCENARIOS=$STRING_GITHUB_SCENARIOS@" /tmp/lightning-tmp/variables.conf
+    sed -i "s@GITHUB_SCENARIOS.*@$STRING_GITHUB_SCENARIOS@" /tmp/lightning-tmp/variables.conf
     echo 5
   fi
       
