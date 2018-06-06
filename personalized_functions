@@ -6,20 +6,22 @@
 ##                                                                                           ##
 ##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
 ##                                                                                           ##
-##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    author:         Pablo Toribio (under supervision of professor C.J. Bernardos Cano)     ##
 ##                                                                                           ##
-##    description:  personalized functions library: library to be written by developers.     ##
-##                  If you need to add new functions to lightning, please do it in this      ##
-##                  file. This file won't be deleted or overwritten if you install a         ##
-##                  newer version of lightning.                                              ##
+##    project site:   https://github.com/ptoribi/lightning                                   ##
+##                                                                                           ##
+##    file description:  library to be written by developers.                                ##
+##                       If you need to add new functions to lightning, please do it in      ##
+##                       this file. This file won't be deleted or overwritten if you         ##
+##                       install a newer version of lightning or you perform an update.      ##
 ##                                                                                           ##
 ###############################################################################################
+
 
 # Please try:
 #   to use the functions that are already written in the "functions" file
 #   not to duplicate the variables that are already included in the "functions" file
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
-SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
 source $LIGHTNING_INSTALLATION_PATH/functions
 
 # Personalized Docker repositories 
