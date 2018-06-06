@@ -1,0 +1,36 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:         Pablo Toribio (under supervision of professor C.J. Bernardos Cano)     ##
+##                                                                                           ##
+##    project site:   https://github.com/ptoribi/lightning                                   ##
+##                                                                                           ##
+##    file description:  library to be written by developers.                                ##
+##                       If you need to add new functions to lightning, please do it in      ##
+##                       this file. This file won't be deleted or overwritten if you         ##
+##                       install a newer version of lightning or you perform an update.      ##
+##                                                                                           ##
+###############################################################################################
+
+
+# Please try:
+#   to use the functions that are already written in the "functions" file
+#   not to duplicate the variables that are already included in the "functions" file
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
+source $LIGHTNING_INSTALLATION_PATH/functions
+
+# Personalized Docker repositories 
+# PERSONALIZED_DOCKER_IMAGE_REPOSITORY="my_user/repository:tag"
+
+# Example of personalized function, it is based on the default lightning function "display_host"
+display_host_nopersistent() {
+
+ local HOST_NAME=$1
+
+ xterm -T "$HOST_NAME" -e "docker exec -i -t --user=root $HOST_NAME bash" &
+}

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:         Pablo Toribio (under supervision of professor C.J. Bernardos Cano)     ##
+##                                                                                           ##
+##    project site:   https://github.com/ptoribi/lightning                                   ##
+##                                                                                           ##
+##    file description:  uninstaller of the program                                          ##
+##                       --- WARNING!!! ---                                                  ##
+##                       This will delete all the files of the program!, including the       ##
+##                       personalized_functions file and the scenarios-local folder!         ##
+##                                                                                           ##
+##    usage:             sudo ./uninstall                                                    ##
+##                                                                                           ##
+###############################################################################################
+
+
+# LIGHTNING_INSTALLATION_PATH -> The default value is usually /usr/local/lightning
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+# SYMLINK_INSTALLATION_PATH -> The default value is usually /usr/local/bin/lightning
+SYMLINK_INSTALLATION_PATH=$(which lightning)
+
+rm -rf $LIGHTNING_INSTALLATION_PATH
+rm -f $SYMLINK_INSTALLATION_PATH
+
+echo $(tput setaf 0)$(tput setab 2) "Lightnig was properly uninstalled" $(tput sgr 0)

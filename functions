@@ -1,0 +1,802 @@
+#!/bin/bash
+
+###############################################################################################
+##                                                                                           ##
+##                       Universidad Carlos III de Madrid (UC3M)                             ##
+##                                                                                           ##
+##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
+##                                                                                           ##
+##    author:         Pablo Toribio (under supervision of professor C.J. Bernardos Cano)     ##
+##                                                                                           ##
+##    project site:   https://github.com/ptoribi/lightning                                   ##
+##                                                                                           ##
+##    file description:  library that provides several functions to be included and used     ##
+##                       by the main program                                                 ##
+##                                                                                           ##
+###############################################################################################
+
+
+# User-related variables
+USER_BEHIND_SUDO=$(logname)
+GROUP_OF_USER_BEHIND_SUDO=$(id -g -n $USER_BEHIND_SUDO)
+# ptoribi: getent also works with remote authentication servers (LDAP, etc.)
+# from "getent passwd" output: user:x:1000:1000:user,,,:/home/user:/bin/bash -> I extract the 6th field delimited by ":" (user's home path)
+USER_BEHIND_SUDO_HOME_PATH=$(getent passwd $USER_BEHIND_SUDO | cut -d : -f 6)
+SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
+
+# System-related variables
+# ptoribi: $0 expands the name of the shell script, readlink -f will resolve all possible symbolic links and dirname will remove the last component (file name).
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
+#LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+source $LIGHTNING_INSTALLATION_PATH/variables.conf
+SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
+SCENARIOS_PATH_LOCAL=$LIGHTNING_INSTALLATION_PATH/scenarios-local
+XSD_FILE=$LIGHTNING_INSTALLATION_PATH/lightning-xml-schema.xsd
+QUAGGA_CONFIG_FILES=$LIGHTNING_INSTALLATION_PATH/quagga-config-files
+CONTAINERS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/containers-created.log
+NETWORKS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/networks-created.log
+
+# usage: version_header
+# description: shows header displaying version number
+version_header() {
+
+  echo ""
+  echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
+  echo "      $(tput setaf 33)**$(tput setaf 45)    Universidad Carlos III de Madrid (UC3M)    $(tput setaf 33)**$(tput sgr 0)"
+  echo "      $(tput setaf 33)**$(tput setaf 45)              Lightning $(cat $LIGHTNING_INSTALLATION_PATH/version)                  $(tput setaf 33)**$(tput sgr 0)"
+  echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
+}
+
+# usage: explore_scenarios
+# description: explore all the directories in $SCENARIOS_PATH listing all the available scenarios
+# NOTE: this function only supports one directory depth level from $SCENARIOS_PATH
+explore_scenarios() {
+  
+  local NUMBER_DIRECTORIES
+  local DIRECTORY_NAME
+  
+  list_scenarios_in_directory $SCENARIOS_PATH_LOCAL
+  
+  NUMBER_DIRECTORIES=$(ls -l $SCENARIOS_PATH_LOCAL | awk 'NR>1' | grep ^d | awk '{print $9}' | wc -l)
+  for ((i=1; i<=$NUMBER_DIRECTORIES; i++))
+  do
+    DIRECTORY_NAME=$(ls -l $SCENARIOS_PATH_LOCAL | awk 'NR>1' | grep ^d | awk '{print $9}' | sed -n $i'p')
+    list_scenarios_in_directory $SCENARIOS_PATH_LOCAL/$DIRECTORY_NAME
+  done
+  
+  list_scenarios_in_directory $SCENARIOS_PATH
+  
+  NUMBER_DIRECTORIES=$(ls -l $SCENARIOS_PATH | awk 'NR>1' | grep ^d | awk '{print $9}' | wc -l)
+  for ((i=1; i<=$NUMBER_DIRECTORIES; i++))
+  do
+    DIRECTORY_NAME=$(ls -l $SCENARIOS_PATH | awk 'NR>1' | grep ^d | awk '{print $9}' | sed -n $i'p')
+    list_scenarios_in_directory $SCENARIOS_PATH $DIRECTORY_NAME
+  done
+}
+
+# usage: list_scenarios_in_directory DIRECTORY
+# description: list the available scenarios in the specified directory (XML or direct execution scenario files)
+# example: list_scenarios_in_directory $PATH $DIRECTORY
+list_scenarios_in_directory() {
+
+  local DIRECTORY=$1/$2
+  
+  local NUMBER_SCENARIOS_FILES
+  local FILE_NAME           # name of the file, e.g.: scenario.xml
+  local FILE_NAME_EXTENDED  # name of the file + relative path from $SCENARIOS_PATH, e.g.: SubjectName/LaboratorySession_1/scenario.xml
+  local DESCRIPTION
+  
+  NUMBER_SCENARIOS_FILES=$(ls -l $DIRECTORY | awk 'NR>1' | grep -v ^d | awk '{print $9}' | grep -v .xsd | grep -v .pdf | grep -v .tmp | wc -l)
+  if [[ $NUMBER_SCENARIOS_FILES -gt 0 ]]
+  then
+    echo "" # ptoribi: separator line between scenarios of different directory 
+  fi
+  
+  for ((j=1; j<=$NUMBER_SCENARIOS_FILES; j++))
+  do
+    FILE_NAME=$(ls -l $DIRECTORY | awk 'NR>1' | grep -v ^d | awk '{print $9}' | grep -v .xsd | grep -v .pdf | grep -v .tmp | sed -n $j'p')
+    
+    # ptoribi: if the file is an XML file
+    if [[ $FILE_NAME == *.xml ]]
+    then
+      DESCRIPTION=$(xmllint --xpath 'string(/scenario/@description)' $DIRECTORY/$FILE_NAME)
+    fi
+    
+    # ptoribi: if the file is a direct execution file (file without extension)
+    if [[ $FILE_NAME != *.* ]]
+    then
+      # ptoribi: I use cut for removing "# DESCRIPTION:", and tail for removing the following space 
+      DESCRIPTION=$(grep "# DESCRIPTION:" $DIRECTORY/$FILE_NAME | cut -d : -f 2 | tail -c +2)
+      if [[ ${#DESCRIPTION} -eq 0 ]]
+      then
+        DESCRIPTION="[scenario description not available]"
+      fi
+    fi
+    
+    if [ "$#" -eq 2 ]
+    then
+      echo "  $(tput setaf 154) $2/${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
+    else
+      echo "  $(tput setaf 154) ${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
+    fi
+ done
+}
+
+
+
+
+# usage: usage_message
+# description: shows usage message of the program and available scenarios
+usage_message() {
+  echo ""
+  echo "$(tput setaf 220)[lightning]$(tput sgr 0) usage:"
+  echo ""
+  echo "  $(tput setaf 6)lightning                  $(tput sgr 0)-> display usage message and list available scenarios"
+  echo "  $(tput setaf 6)lightning stop             $(tput sgr 0)-> close running scenario"
+  echo "  $(tput setaf 6)lightning purge            $(tput sgr 0)-> ONLY use this option in case \"stop\" doesn't work"
+  echo "  $(tput setaf 6)lightning start $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
+  echo "  $(tput setaf 196)lightning update           $(tput sgr 0)-> update Lightning to the latest version available"
+  echo ""
+  echo "  Available scenarios:"
+  #list_scenarios_in_directory $SCENARIOS_PATH
+  explore_scenarios
+  echo ""
+  echo "  Your shared folder between host systems is located"
+  echo "  at $(tput setaf 13)$SHARED_FOLDER$(tput sgr 0) in your main system, and will"
+  echo "  be mounted as $(tput setaf 5)/home/$USER_BEHIND_SUDO$(tput sgr 0) inside the simulated host systems."
+  echo ""
+}
+
+# description: disables ipv6 for one interface in the specified container (container should have been started in "privileged" mode)
+# usage: disable_ipv6 CONTAINER_NAME INTERFACE_NAME
+# example: disable_ipv6 pc1 eth1
+disable_ipv6() {
+
+  local $CONTAINER_NAME=$1
+  local $INTERFACE_NAME=$2
+
+  docker exec --user=root $CONTAINER_NAME sysctl -w net.ipv6.conf.$INTERFACE_NAME.disable_ipv6=1
+}
+
+
+# description: clears all IP addresses present in the selected interface
+# usage: clear_interface CONTAINER_NAME INTERFACE_NAME
+# example: clear_interface pc1 eth1
+clear_interface() {
+
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+
+  docker exec --user=root $CONTAINER_NAME ip addr flush dev $INTERFACE_NAME
+}
+
+
+# description: creates a L2 network segment
+# usage: create_network NET_NAME TYPE (max. NET_NAME length 15-3=12 characters)
+# example: create_network net1 switch
+create_network() {
+
+  local NET_NAME=$1
+  local TYPE=$2
+  
+  #if [[ -z $(ls -l /sys/class/net/ | awk 'NR>1' | awk '{print $9}' | grep -x $NET_NAME"_br") ]]
+  # ptoribi: if the network doesn't exist yet, it will be created
+  if [[ -z $(ls /sys/class/net/ | grep -x $NET_NAME"_br") ]]
+  then
+    local BRIDGE_NAME=$NET_NAME"_br"
+  
+    brctl addbr $BRIDGE_NAME
+    ip link set dev $BRIDGE_NAME up
+
+    # ptoribi: now FORWARD rule has to be allowed in iptables for that bridge
+    iptables -A FORWARD -i $BRIDGE_NAME -j ACCEPT
+
+    # ptoribi: add created network to NETWORKS_CREATED_FILE (it actually adds the bridge name)
+    echo $BRIDGE_NAME >> $NETWORKS_CREATED_FILE
+
+    information_message "Network segment $NET_NAME successfully created"
+  else
+      error_message "Network segment $NET_NAME already exists"
+  fi
+  
+  if [ $TYPE == "hub" ]
+  then
+    brctl setageing $BRIDGE_NAME 0
+  fi
+}
+
+
+# usage: create_container CONTAINER_NAME CONTAINER_NAME_LONG TYPE
+# description: creates a host/router with no network interfaces
+# example: create_container h1 host1 host
+create_container() {
+  
+  local CONTAINER_NAME=$1
+  local CONTAINER_NAME_LONG=$2
+  local TYPE=$3
+  
+  if [ $TYPE == "host" ]
+  then
+    create_host $CONTAINER_NAME $CONTAINER_NAME_LONG
+  fi
+    
+  if [ $TYPE == "router" ]
+  then
+    create_router $CONTAINER_NAME $CONTAINER_NAME_LONG
+  fi
+}
+
+
+# usage: create_host HOST_NAME HOST_NAME_LONG
+# description: creates a host with no network interfaces
+# example create_host h1 host1
+create_host() {
+
+  local HOST_NAME=$1
+  local HOST_NAME_LONG=$2
+
+  mkdir -p $SHARED_FOLDER
+  chown $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO $SHARED_FOLDER
+  # ptoribi: run container with X-org forwarding support (I will try to make the same stuff but with wayland later) and $SHARED_FOLDER mounted as the home of the container
+  # --rm means the container will be destroyed when stopped, no need to make "docker rm $HOST_NAME" after stop
+  docker run --privileged -t -d --rm --sysctl net.ipv6.conf.all.disable_ipv6=0 -e DISPLAY=unix$DISPLAY -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO -v /tmp/.X11-unix:/tmp/.X11-unix --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --cap-add=NET_ADMIN $DOCKER_IMAGE_host >> /dev/null
+
+  # ptoribi: create user inside the container with same uid:gid as the one executing this program
+  docker exec --user=root $HOST_NAME groupadd --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $GROUP_OF_USER_BEHIND_SUDO
+  docker exec --user=root $HOST_NAME useradd --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $USER_BEHIND_SUDO
+  
+  # ptoribi: add the user to group "wireshark" so dumpcap could be executed by regular users
+  docker exec --user=root $HOST_NAME usermod -a -G wireshark $USER_BEHIND_SUDO
+  #docker cp $LIGHTNING_INSTALLATION_PATH/other/bash_persistent $HOST_NAME:/bin
+  docker exec --user=root $HOST_NAME bash -c "echo 127.0.1.1 $HOST_NAME_LONG >> /etc/hosts"
+  # ptoribi: allow that user to execute sudo without writting the password each time
+  docker exec --user=root $HOST_NAME bash -c "echo $USER_BEHIND_SUDO ALL=\(ALL\) NOPASSWD: ALL >> /etc/sudoers"
+  # ptoribi: allows the container to make connections to the X-org server running in the main OS
+  xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $HOST_NAME` >> /dev/null
+
+  # ptoribi: create links for accessing the network namespace
+  local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $HOST_NAME`
+  mkdir -p /var/run/netns
+  ln -sf /proc/1/ns/net /var/run/netns/default
+  ln -sf /proc/$CONTAINER_PID/ns/net /var/run/netns/$HOST_NAME
+
+  # ptoribi: add created container to CONTAINERS_CREATED_FILE
+  echo $HOST_NAME >> $CONTAINERS_CREATED_FILE
+
+  information_message "Container $HOST_NAME (PID=$CONTAINER_PID) successfully created"
+}
+
+
+# usage: create_router ROUTER_NAME ROUTER_NAME_LONG
+# description: creates a router with no network interfaces
+# example: create_router r1 router1
+create_router() {
+
+  local ROUTER_NAME=$1
+  local ROUTER_NAME_LONG=$2
+
+  # ptoribi: run container in privileged mode (is this really necessary? I should try givin only specific capabilities in the future)
+  docker run --privileged -t -d --rm --sysctl net.ipv6.conf.all.disable_ipv6=0 --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none $DOCKER_IMAGE_router >> /dev/null
+
+  # ptoribi: create links for accessing the network namespace
+  local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $ROUTER_NAME`
+  mkdir -p /var/run/netns
+  ln -sf /proc/1/ns/net /var/run/netns/default
+  ln -sf /proc/$CONTAINER_PID/ns/net /var/run/netns/$ROUTER_NAME
+
+  # ptoribi: the quagga configuration files will be copied to the router container and stored in /etc/quagga
+  docker cp $QUAGGA_CONFIG_FILES/quagga $ROUTER_NAME:/etc
+  #docker cp $LIGHTNING_INSTALLATION_PATH/other/vtysh_persistent $ROUTER_NAME:/usr/bin
+  # ptoribi: all the config files must be owned by user and group "quagga" in order to work
+  docker exec --user=root $ROUTER_NAME bash -c "chown -R quagga:quagga /etc/quagga"
+  # ptoribi: the vtysh config file must be owned by user "quagga" and group "quaggavty" in order to work
+  docker exec --user=root $ROUTER_NAME bash -c "chown quagga:quaggavty /etc/quagga/vtysh.conf"
+  # ptoribi: the default hostname in the quagga configuration files will be replaced by the one specified for this router
+  docker exec --user=root $ROUTER_NAME bash -c "sed -i "s/DEFAULT_HOSTNAME/$ROUTER_NAME_LONG/g" /etc/quagga/*"
+
+  # ptoribi: add created container to CONTAINERS_CREATED_FILE
+  echo $ROUTER_NAME >> $CONTAINERS_CREATED_FILE
+
+  information_message "Container $ROUTER_NAME (PID=$CONTAINER_PID) successfully created"
+}
+
+
+# usage: create_interface CONTAINER_NAME INTERFACE_NAME [IP/SM]
+# description: creates an ethernet interface in the specified container, optionally also configures an IP address
+# example: create_interface h1 eth0 192.168.0.1/24
+create_interface() {
+
+  ### CREATE INTERFACE & PAIRS FOR THAT CONTAINER ###
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+
+  local INTERFACE_NAME_TO_BRIDGE=$CONTAINER_NAME"_"$INTERFACE_NAME
+  ip netns exec $CONTAINER_NAME ip link add $INTERFACE_NAME type veth peer name $INTERFACE_NAME_TO_BRIDGE
+  ip netns exec $CONTAINER_NAME ip link set $INTERFACE_NAME_TO_BRIDGE netns default
+  ip netns exec $CONTAINER_NAME ip link set dev $INTERFACE_NAME up
+  ip link set dev $INTERFACE_NAME_TO_BRIDGE up
+
+  if [ "$#" -eq 3 ]; then
+    # Assign IP to interface
+    local IP_SM=$3
+    configure_ip $CONTAINER_NAME $INTERFACE_NAME $IP_SM
+  fi
+
+  # Now both internal container interface and external are created, but not connected to any bridge
+}
+
+# usage: connect_machine HOST_NAME INTERFACE_NAME NET_NAME [IP/SM]
+# description: connects the specified interface to a network, optionally also configures an IP address
+# requirements: the host and the net had to be already created
+# example: connect_machine h1 eth0 net1 192.168.0.1/24
+connect_machine() {
+
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+  local NET_NAME=$3
+ 
+  # NOTE: CONTAINER CONNECTS TO BRIDGE
+  local BRIDGE_NAME=$NET_NAME"_br"
+  local INTERFACE_NAME_TO_BRIDGE=$CONTAINER_NAME"_"$INTERFACE_NAME
+  brctl addif $BRIDGE_NAME $INTERFACE_NAME_TO_BRIDGE
+  ip link set dev $INTERFACE_NAME_TO_BRIDGE up
+
+  if [ "$#" -eq 4 ]; then
+    # Assign IP to interface
+    local IP_SM=$4
+    configure_ip $CONTAINER_NAME $INTERFACE_NAME $IP_SM
+  fi
+
+  information_message "Container $CONTAINER_NAME ($INTERFACE_NAME) successfully connected to $NET_NAME"
+}
+
+
+# usage: connect_machine_physical CONTAINER_NAME INTERFACE_NAME PHYSICAL_INTERFACE [IP/SM]
+# description: connects the specified interface to a physical network interface of the host connect_machine
+# using macvlan, optionally also configures an IP address
+# example: connect_machine_physical r1 eth0.0 eth0 192.168.0.1/24
+connect_machine_physical() {
+  
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+  local PHYSICAL_INTERFACE=$3
+  
+  # Check if PHYSICAL_INTERFACE is a physical NIC in the host system
+  if [ -n $(ls -l /sys/class/net/ | awk 'NR>1' | grep -v virtual | awk '{print $9}' | grep -x $PHYSICAL_INTERFACE) ]
+  then
+    # NOTE: MACVLAN BRIDGE IS CREATED ON PHYSICAL INTERFACE
+    # ptoribi: I use a temporal name for that macvlan interface *_tmp, so in case that it exist a physical network interface with the same  name in the host, it won't generate any problem
+    
+    ip link add $INTERFACE_NAME"_tmp" link $PHYSICAL_INTERFACE type macvlan mode bridge
+    ip link set $INTERFACE_NAME"_tmp" netns $CONTAINER_NAME
+    ip netns exec $CONTAINER_NAME ip link set $INTERFACE_NAME"_tmp" name $INTERFACE_NAME
+    ip netns exec $CONTAINER_NAME ip link set dev $INTERFACE_NAME up
+    
+    if [ "$#" -eq 4 ]; then
+      # Assign IP to interface
+      local IP_SM=$4
+      configure_ip $CONTAINER_NAME $INTERFACE_NAME $IP_SM
+    fi
+  else
+    error_message "$PHYSICAL_INTERFACE is not a physical network interface of the host system"
+  fi
+
+  information_message "Container $CONTAINER_NAME ($INTERFACE_NAME) directly connected to physical interface $PHYSICAL_INTERFACE"
+}
+
+
+# NOTE: FUNCIÓN NO PROBADA !!!
+# usage: disconnect_machine HOST_NAME INTERFACE_NAME NET_NAME
+# description: disconnects the specified interface of a host from a network
+# requirements: the net of that host had to be already connected to that network
+# example: disconnect_machine h1 eth0 net1
+disconnect_machine() {
+
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+  local NET_NAME=$3
+  local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $CONTAINER_NAME`
+
+  local BRIDGE_NAME=$NET_NAME"_br"
+  local INTERFACE_NAME_TO_BRIDGE=$CONTAINER_NAME"_"$INTERFACE_NAME
+  ip link set dev $INTERFACE_NAME_TO_BRIDGE down
+  brctl delif $BRIDGE_NAME $INTERFACE_NAME_TO_BRIDGE
+
+  information_message "Container $CONTAINER_NAME ($INTERFACE_NAME) successfully disconnected from $NET_NAME"
+}
+
+
+# usage: configure_ip HOST_NAME INTERFACE_NAME IP/SM
+# description: adds IPv4 or IPv6 adress to the desired interface
+# example: configure_ip hostA eth1 192.168.0.1/24
+# example: configure_ip hostA eth1 2001:0db8:0:f101::1/64
+configure_ip() {
+
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+  local IP_SM=$3
+
+  if [[ $IP_SM == *"."*"."*"."* ]]
+  then
+    # ptoribi: it is a IPv4 address
+    ip netns exec $CONTAINER_NAME ip addr add $IP_SM dev $INTERFACE_NAME
+  else
+    # ptoribi: it is a IPv6 address
+    ip netns exec $CONTAINER_NAME ip -6 addr add $IP_SM dev $INTERFACE_NAME
+  fi
+}
+
+
+# usage: display_host HOST_NAME [XTERM_WINDOW_TITLE]
+# description: starts some services and launchs a xterm window running a previously created host
+# example: display_host h1 host1
+display_host() {
+
+ local HOST_NAME=$1
+
+ if [ "$#" -eq 2 ]
+ then
+   local XTERM_WINDOW_TITLE=$2
+ else
+   local XTERM_WINDOW_TITLE=$1
+ fi
+ 
+  # ptoribi: start ssh and telnet service in order to allow incoming connections
+  docker exec --user=root $HOST_NAME bash -c "/etc/init.d/ssh start" >> /dev/null
+  docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> /dev/null
+
+  xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+}
+
+
+# usage: display_router ROUTER_NAME [XTERM_WINDOW_TITLE]
+# description: starts some services and launchs a xterm window running a previously created router
+# example: display_router r1 router1
+display_router() {
+
+ local ROUTER_NAME=$1
+
+ if [ "$#" -eq 2 ]
+ then
+   local XTERM_WINDOW_TITLE=$2
+ else
+   local XTERM_WINDOW_TITLE=$1
+ fi
+ 
+  # ptoribi: start ssh and telnet service in order to allow incoming connections
+  docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/ssh start" >> /dev/null
+  # docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/xinetd start" >> /dev/null
+  # ptoribi: the quagga daemon is started
+  docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/quagga start" >> /dev/null
+
+  xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+}
+
+
+# usage: stop_containers
+# description: reads from the log file where the name of started container are recorded and stops them one by one
+# example: stop_containers
+stop_containers() {
+
+  if [ -e $CONTAINERS_CREATED_FILE ]
+  then
+    while :
+    do
+      local READEN_LINE=$(head -n 1 $CONTAINERS_CREATED_FILE)
+      if [ -z "$READEN_LINE" ]
+      then
+        rm $CONTAINERS_CREATED_FILE
+        if [ $? == 0 ]
+        then
+          success_message "Containers stopped!"
+        fi
+        break
+      else
+        docker stop $READEN_LINE >> /dev/null
+        if [ $? == 0 ]
+        then
+          information_message "Container $READEN_LINE successfully stopped"
+        fi
+        sed -i '1d' $CONTAINERS_CREATED_FILE
+      fi
+    done
+  else
+    error_message "$CONTAINERS_CREATED_FILE not found!"
+  fi
+}
+
+# usage: delete_networks
+# description: reads from the log file where the name of created networks are recorded and deletes them one by one
+# example: delete_networks
+delete_networks() {
+
+  if [ -e $NETWORKS_CREATED_FILE ]
+  then
+    while :
+    do
+      local READEN_LINE=$(head -n 1 $NETWORKS_CREATED_FILE)
+      if [ -z "$READEN_LINE" ]
+      then
+        rm $NETWORKS_CREATED_FILE
+        if [ $? == 0 ]
+        then
+          success_message "Networks destroyed!"
+        fi
+        break
+      else
+        ip link set $READEN_LINE down
+        if [ $? == 0 ]
+        then
+          brctl delbr $READEN_LINE
+          if [ $? == 0 ]
+          then
+            information_message "Bridge $READEN_LINE successfully deleted"
+          else
+            error_message "Error when deleting bridge $READEN_LINE"
+          fi
+        else
+          error_message "Error when setting down bridge $READEN_LINE"
+        fi
+        sed -i '1d' $NETWORKS_CREATED_FILE
+      fi
+    done
+  else
+    error_message "$NETWORKS_CREATED_FILE not found!"
+  fi
+}
+
+
+# usage: error_message "blablabla"
+# description: displays the specified text in black with red background
+error_message() {
+  echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 0)$(tput setab 1) $1 $(tput sgr 0)
+}
+
+# usage: information_message "blablabla"
+# description: displays the specified text in green
+information_message() {
+  echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 2) $1 $(tput sgr 0)
+}
+
+# usage: success_message "blablabla"
+# description: displays the specified text in black with green background
+success_message() {
+  echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 0)$(tput setab 2) $1 $(tput sgr 0)
+}
+
+
+# usage: lightning_stop
+# description: executes stop_containers and delete_networks and sfter that deletes both log files
+# example: lightning_stop
+lightning_stop() {
+  if [ -e $CONTAINERS_CREATED_FILE ] && [ -e $NETWORKS_CREATED_FILE ]
+  then
+    stop_containers
+    delete_networks
+    success_message "Scenario successfully stopped"
+  elif [ -e $CONTAINERS_CREATED_FILE ]
+  then
+    stop_containers
+    success_message "Scenario successfully stopped"
+  elif [ -e $NETWORKS_CREATED_FILE ]
+  then
+    delete_networks
+    success_message "Scenario successfully stopped"
+  else
+    error_message "There is currently no scenario running to be stopped"
+  fi
+}
+
+
+# usage: lightning_purge
+# description: use with caution!, stops all the containers running in the host system and deletes
+# all bridges whose name ends with "_br"
+# example: lightning_purge
+lightning_purge() {
+
+  # ptoribi: stop all Docker container running on this system (and what if other containers not related to lightning are also running?, we do not care about the rest of this world)
+  if [ -n "$(docker container ls -a -q)" ]
+  then
+    docker stop $(docker container ls -a -q) >> /dev/null
+  fi
+  
+  # ptoribi: set down and destroy all bridges whose name ends with "_br" (this is the bridge name convention used by lightning)
+  while :
+  do
+    # ptoribi: next line is based on jil's response (https://stackoverflow.com/questions/36960003/how-to-extract-bridge-name-from-brctl-output-with-bash). Thanks jil!
+    # Explanation: 
+    # NOTE: "record" is the same as "line" in the awk man entry
+    # {print $1} will print only the first field of each line
+    # NR>1 will remove the first line of the "brctl show" output, that is a header (not interesting for us as it hasn't info)
+    # NF>1 will print only records that have more that one field (when one bridge has multiple interfaces attached, each one appear in one separated line, we do not care about interfaces, only about bridge names)
+    NEXT_BRIDGE=$(brctl show | awk 'NF>1 && NR>1 {print $1}' | grep _br | head -n 1)
+    if [ -z "$NEXT_BRIDGE" ]
+    then
+      break
+    else
+      ip link set $NEXT_BRIDGE down
+      brctl delbr $NEXT_BRIDGE
+    fi
+  done
+  
+  # ptoribi: remove CONTAINERS_CREATED_FILE and NETWORKS_CREATED_FILE files
+  rm -f $CONTAINERS_CREATED_FILE
+  rm -f $NETWORKS_CREATED_FILE
+  
+  success_message "System successfully purged"
+}
+
+
+# usage: read_xml [XML_FILE]
+# description: reads an XML scenario file and creates containers, networks and connections accordingly
+# example: read_xml my_scenario.xml
+read_xml() {
+
+  local XML_FILE=$1
+  
+  # ptoribi: list of indexes for reading containers (one scenario may contain several containers, one container may contain several interfaces, one interface may contain several default IPs)
+  local CONTAINER_INDEX=1
+  local CONTAINER_INTERFACE_INDEX=1
+  local CONTAINER_INTERFACE_DEFAULT_IP_INDEX=1
+  # ptoribi: list of indexes for reading networks (one scenario may contain several networks, one network may contain several containers, one container may contain several interfaces (attached to that network), one interface may contain several IPs)
+  local NETWORK_INDEX=1
+  local NETWORK_CONTAINER_INDEX=1
+  local NETWORK_CONTAINER_INTERFACE_INDEX=1
+  local NETWORK_CONTAINER_INTERFACE_IP_INDEX=1
+  
+  # ptoribi: variables for storing data readen from the XML file
+  local CONTAINER                             # Will store attribute @name of a container             [REQUIRED]
+  local CONTAINER_hostname                    # Will store attribute @hostname of a container         [OPTIONAL] [DEFAULT=@name]
+  local CONTAINER_type                        # Will store attribute @type of a container             [REQUIRED]
+  local CONTAINER_INTERFACE                   # Will store attribute @name of an interface            [REQUIRED]
+  local CONTAINER_INTERFACE_enable_ipv6       # Will store attribute @enable_ipv6 of an interface     [OPTIONAL] [DEFAULT="yes"]
+  local CONTAINER_INTERFACE_link_local_ipv6   # Will store attribute @link_local_ipv6 of an interface [OPTIONAL] [DEFAULT="yes"]
+  local CONTAINER_INTERFACE_connected_to_physical_interface   # Will store attribute @connected_to_physical_interface of an interface [OPTIONAL]
+  local CONTAINER_INTERFACE_DEFAULT_IP        # Will store the content of a default_ip element        [OPTIONAL]
+  local NETWORK                               # Will store attribute @name of a network               [REQUIRED]
+  local NETWORK_type                          # Will store attribute @type of a network               [OPTIONAL] [DEFAULT="switch"]
+  local NETWORK_CONTAINER                     # Will store attribute @name of a container             [REQUIRED]
+  local NETWORK_CONTAINER_INTERFACE           # Will store attribute @name of an interface            [REQUIRED]
+  local NETWORK_CONTAINER_INTERFACE_IP        # Will store the content of an ip element               [OPTIONAL]
+  
+  local CONTAINER_NAME_ARRAY
+  local CONTAINER_TYPE_ARRAY
+  local CONTAINER_HOSTNAME_ARRAY
+
+  # ptoribi: first of all, validation. Lightning will not process XML files that do not comply with the Lightning XML Schema.
+  xmllint --schema $XSD_FILE $XML_FILE --noout >> /dev/null
+  if [ $? == 0 ]
+  then
+    
+    # ptoribi: READ CONTAINERS
+    CONTAINER=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@name)' $XML_FILE)
+    while [[ ${#CONTAINER} -ne 0 ]]
+    do
+      
+      CONTAINER_hostname=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@hostname)' $XML_FILE)
+      if [[ ${#CONTAINER_hostname} -eq 0 ]]; then CONTAINER_hostname=$CONTAINER; fi
+      CONTAINER_type=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@type)' $XML_FILE)
+      #echo $'\n'$CONTAINER $(tput setaf 240)\(\"$CONTAINER_hostname\", $CONTAINER_type\)$(tput sgr 0)
+      create_container $CONTAINER $CONTAINER_hostname $CONTAINER_type
+      
+      CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
+      while [[ ${#CONTAINER_INTERFACE} -ne 0 ]]
+      do
+        CONTAINER_INTERFACE_enable_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@enable_ipv6)' $XML_FILE)
+        # ptoribi: set default value for @enable_ipv6
+        if [[ ${#CONTAINER_INTERFACE_enable_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_enable_ipv6="yes"; fi
+        CONTAINER_INTERFACE_link_local_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@link_local_ipv6)' $XML_FILE)
+        
+        # ptoribi: set default value for @link_local_ipv6
+        if [[ ${#CONTAINER_INTERFACE_link_local_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_link_local_ipv6="yes"; fi
+        CONTAINER_INTERFACE_connected_to_physical_interface=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@connected_to_physical_interface)' $XML_FILE)
+
+        if [[ ${#CONTAINER_INTERFACE_connected_to_physical_interface} -ne 0 ]]
+        then
+          connect_machine_physical $CONTAINER $CONTAINER_INTERFACE $CONTAINER_INTERFACE_connected_to_physical_interface 
+        else
+          create_interface $CONTAINER $CONTAINER_INTERFACE
+        fi
+        
+        if [ $CONTAINER_INTERFACE_enable_ipv6 == "no" ]
+        then
+          disable_ipv6 $CONTAINER $CONTAINER_INTERFACE
+        fi
+        
+        if [ $CONTAINER_INTERFACE_enable_ipv6 == "yes" ] && [ $CONTAINER_INTERFACE_link_local_ipv6 == "no" ]
+        then
+          clear_interface $CONTAINER $CONTAINER_INTERFACE
+        fi
+        
+        #echo "  "$CONTAINER_INTERFACE $(tput setaf 240)\(enable_ipv6=\"$CONTAINER_INTERFACE_enable_ipv6\", link_local_ipv6=\"$CONTAINER_INTERFACE_link_local_ipv6\"\)$(tput sgr 0)
+        CONTAINER_INTERFACE_DEFAULT_IP=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface[./@name="'"$CONTAINER_INTERFACE"'"]/default_ip['$CONTAINER_INTERFACE_DEFAULT_IP_INDEX'])' $XML_FILE)
+        while [[ ${#CONTAINER_INTERFACE_DEFAULT_IP} -ne 0 ]]
+        do
+          #echo "    "$CONTAINER_INTERFACE_DEFAULT_IP
+          configure_ip $CONTAINER $CONTAINER_INTERFACE $CONTAINER_INTERFACE_DEFAULT_IP
+          
+          ((CONTAINER_INTERFACE_DEFAULT_IP_INDEX++))
+          CONTAINER_INTERFACE_DEFAULT_IP=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface[./@name="'"$CONTAINER_INTERFACE"'"]/default_ip['$CONTAINER_INTERFACE_DEFAULT_IP_INDEX'])' $XML_FILE)
+        done
+        CONTAINER_INTERFACE_DEFAULT_IP_INDEX=1
+        ((CONTAINER_INTERFACE_INDEX++))
+        CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
+      done
+      CONTAINER_INTERFACE_INDEX=1
+      
+      # ptoribi: I populate these three arrays with the name of the container, its type and hostname,
+      # the purpose of this is to store the info about the containers in order to display the 
+      # xterm window only after all they have been properly initialized and connected
+      CONTAINER_NAME_ARRAY[$CONTAINER_INDEX]=$CONTAINER
+      CONTAINER_TYPE_ARRAY[$CONTAINER_INDEX]=$CONTAINER_type
+      CONTAINER_HOSTNAME_ARRAY[$CONTAINER_INDEX]=$CONTAINER_hostname
+      
+      ((CONTAINER_INDEX++))
+      CONTAINER=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@name)' $XML_FILE)
+    done
+    CONTAINER_INDEX=1
+    
+    
+    # ptoribi: READ NETWORKS
+    NETWORK=$(xmllint --xpath 'string(/scenario/network['$NETWORK_INDEX']/@name)' $XML_FILE)
+    while [[ ${#NETWORK} -ne 0 ]]
+    do
+      NETWORK_type=$(xmllint --xpath 'string(/scenario/network['$NETWORK_INDEX']/@type)' $XML_FILE)
+      if [[ ${#NETWORK_type} -eq 0 ]]; then NETWORK_type="switch"; fi
+      #echo $'\n'$NETWORK $(tput setaf 24)\($NETWORK_type\)$(tput sgr 0)
+      create_network $NETWORK $NETWORK_type
+      
+      NETWORK_CONTAINER=$(xmllint --xpath 'string(/scenario/network[./@name="'"$NETWORK"'"]/container['$NETWORK_CONTAINER_INDEX']/@name)' $XML_FILE)
+      while [[ ${#NETWORK_CONTAINER} -ne 0 ]]
+      do
+        #echo "  "$NETWORK_CONTAINER
+        
+        NETWORK_CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/network[./@name="'"$NETWORK"'"]/container[./@name="'"$NETWORK_CONTAINER"'"]/interface['$NETWORK_CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
+        while [[ ${#NETWORK_CONTAINER_INTERFACE} -ne 0 ]]
+        do
+          #echo "    "$NETWORK_CONTAINER_INTERFACE
+          connect_machine $NETWORK_CONTAINER $NETWORK_CONTAINER_INTERFACE $NETWORK
+          
+          NETWORK_CONTAINER_INTERFACE_IP=$(xmllint --xpath 'string(/scenario/network[./@name="'"$NETWORK"'"]/container[./@name="'"$NETWORK_CONTAINER"'"]/interface[./@name="'"$NETWORK_CONTAINER_INTERFACE"'"]/ip['$NETWORK_CONTAINER_INTERFACE_IP_INDEX'])' $XML_FILE)
+          while [[ ${#NETWORK_CONTAINER_INTERFACE_IP} -ne 0 ]]
+          do
+            #echo "      "$NETWORK_CONTAINER_INTERFACE_IP
+            configure_ip $NETWORK_CONTAINER $NETWORK_CONTAINER_INTERFACE $NETWORK_CONTAINER_INTERFACE_IP
+            
+            ((NETWORK_CONTAINER_INTERFACE_IP_INDEX++))
+            NETWORK_CONTAINER_INTERFACE_IP=$(xmllint --xpath 'string(/scenario/network[./@name="'"$NETWORK"'"]/container[./@name="'"$NETWORK_CONTAINER"'"]/interface[./@name="'"$NETWORK_CONTAINER_INTERFACE"'"]/ip['$NETWORK_CONTAINER_INTERFACE_IP_INDEX'])' $XML_FILE)
+          done
+          NETWORK_CONTAINER_INTERFACE_IP_INDEX=1
+          ((NETWORK_CONTAINER_INTERFACE_INDEX++))
+          NETWORK_CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/network[./@name="'"$NETWORK"'"]/container[./@name="'"$NETWORK_CONTAINER"'"]/interface['$NETWORK_CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
+        done
+        NETWORK_CONTAINER_INTERFACE_INDEX=1
+        ((NETWORK_CONTAINER_INDEX++))
+        NETWORK_CONTAINER=$(xmllint --xpath 'string(/scenario/network[./@name="'"$NETWORK"'"]/container['$NETWORK_CONTAINER_INDEX']/@name)' $XML_FILE)
+      done
+      NETWORK_CONTAINER_INDEX=1
+      ((NETWORK_INDEX++))
+      NETWORK=$(xmllint --xpath 'string(/scenario/network['$NETWORK_INDEX']/@name)' $XML_FILE)
+    done
+    NETWORK_INDEX=1  
+    
+    # ptoribi: display the xterm window of all containers
+    for index in "${!CONTAINER_NAME_ARRAY[@]}"
+    do
+      if [ ${CONTAINER_TYPE_ARRAY[index]} == "host" ]
+      then
+        display_host ${CONTAINER_NAME_ARRAY[index]} ${CONTAINER_HOSTNAME_ARRAY[index]}
+      fi
+      
+      if [ ${CONTAINER_TYPE_ARRAY[index]} == "router" ]
+      then
+        display_router ${CONTAINER_NAME_ARRAY[index]} ${CONTAINER_HOSTNAME_ARRAY[index]}
+      fi
+    done
+    
+    success_message "Scenario successfully launched"
+    
+  else
+    error_message "$XML_FILE validation error, the file does not comply with the Lightning XML Schema"
+  fi
+}

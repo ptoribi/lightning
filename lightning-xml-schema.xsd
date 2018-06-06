@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  
+  <xs:element name="scenario">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="container" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="interface" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="default_ip" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                  </xs:sequence>     
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                  <xs:attribute name="enable_ipv6" default="yes">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="yes"/>
+                        <xs:enumeration value="no"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                  <xs:attribute name="link_local_ipv6" default="yes">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="yes"/>
+                        <xs:enumeration value="no"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                  <xs:attribute name="connected_to_physical_interface" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>              
+            </xs:sequence>            
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="hostname" type="xs:string"/>
+            <xs:attribute name="type" type="xs:string" use="required"/>            
+          </xs:complexType>
+        </xs:element>        
+        <xs:element name="network" minOccurs="0" maxOccurs="unbounded">          
+          <xs:complexType>
+            <xs:sequence>            
+              <xs:element name="container" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="interface" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="ip" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>                        
+                        <xs:attribute name="name" type="xs:string" use="required"/>
+                      </xs:complexType>                       
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="type" default="switch">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="switch"/>
+                  <xs:enumeration value="hub"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>        
+      </xs:sequence>
+      <xs:attribute name="description" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
