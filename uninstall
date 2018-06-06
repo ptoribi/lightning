@@ -27,3 +27,5 @@ SYMLINK_INSTALLATION_PATH=$(which lightning)
 
 rm -rf $LIGHTNING_INSTALLATION_PATH
 rm -f $SYMLINK_INSTALLATION_PATH
+
+echo $(tput setaf 0)$(tput setab 2) "Lightnig was properly uninstalled" $(tput sgr 0)
