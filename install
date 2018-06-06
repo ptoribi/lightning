@@ -6,11 +6,13 @@
 ##                                                                                           ##
 ##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
 ##                                                                                           ##
-##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    author:         Pablo Toribio (under supervision of professor C.J. Bernardos Cano)     ##
 ##                                                                                           ##
-##    description:  installer of the program                                                 ##
+##    project site:   https://github.com/ptoribi/lightning                                   ##
 ##                                                                                           ##
-##    usage:        sudo ./install                                                           ##
+##    file description:  installer of the program                                            ##
+##                                                                                           ##
+##    usage:             sudo ./install                                                      ##
 ##                                                                                           ##
 ###############################################################################################
 
@@ -30,11 +32,11 @@ SYMLINK_INSTALLATION_DIRECTORY=/usr/local/bin
 # ptoribi: only root or regular users with "sudo" can install lightning 
 if [[ $(logname) == "root" ]] || [[ $(whoami) == "root" ]]
 then
-  # ptoribi: create directory for storing the program
+  # ptoribi: create a directory for storing the program
   mkdir -p $LIGHTNING_INSTALLATION_DIRECTORY/lightning
   # ptoribi: enter into the installer folder
   cd $(dirname $(readlink -f $0))
-  # ptoribi: copy all the files but the installer, the personalized_functions file and the screenshots to that directory (and overwrite previous versions of the files)
+  # ptoribi: copy all the files but the installer, the personalized_functions file and the screenshots to that directory (and overwrite previous versions of the files if present)
   cp -rf $(ls | grep -vw "install\|personalized_functions\|screenshots") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
   # ptoribi: copy the personalized_functions file only if it is not already installed (do not overwrite)
   cp -n personalized_functions $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
@@ -47,7 +49,7 @@ then
   rm -rf $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
   mkdir $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
   source $LIGHTNING_INSTALLATION_DIRECTORY/lightning/variables.conf
-  git clone $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
+  git clone $GIT_REPO_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
   if [ $? == 0 ]
   then
     echo $(tput setaf 0)$(tput setab 2) "Scenarios were properly installed" $(tput sgr 0)

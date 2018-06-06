@@ -6,15 +6,18 @@
 ##                                                                                           ##
 ##    Lightning - The simple and lightweight network simulator based on Docker containers    ##
 ##                                                                                           ##
-##    author:       Pablo Toribio (under supervision of professor C.J. Bernardos Cano)       ##
+##    author:         Pablo Toribio (under supervision of professor C.J. Bernardos Cano)     ##
 ##                                                                                           ##
-##    description:  updater of the program                                                   ##
+##    project site:   https://github.com/ptoribi/lightning                                   ##
 ##                                                                                           ##
-##    usage:        not to be used directly, but summoned by "lightning" file                ##
+##    file description:  updater of the program                                              ##
+##                                                                                           ##
+##    usage:             not to be used directly, but summoned by "lightning" file           ##
 ##                                                                                           ##
 ###############################################################################################
 
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
 source $LIGHTNING_INSTALLATION_PATH/variables.conf
 
 # ptoribi: update the Docker images from DockerHub
@@ -37,7 +40,7 @@ rm -rf /tmp/lightning-tmp
 mkdir /tmp/lightning-tmp
 
 # ptoribi: the last version of Lightning will be downloaded from GitHub
-git clone $GITHUB /tmp/lightning-tmp
+git clone $GIT_REPO /tmp/lightning-tmp
 
 if [ $? == 0 ]
 then
@@ -64,18 +67,18 @@ then
     #echo $STRING_DOCKER_IMAGE_router
   fi
   
-  STRING_GITHUB=$(grep "GITHUB=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
-  if [[ ${#STRING_GITHUB} -ne 0 ]]
+  STRING_GITHUB=$(grep "GIT_REPO=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
+  if [[ ${#STRING_GIT_REPO} -ne 0 ]]
   then
-    sed -i "s@GITHUB=.*@$STRING_GITHUB@" /tmp/lightning-tmp/variables.conf
-    #echo $STRING_GITHUB
+    sed -i "s@GIT_REPO=.*@$STRING_GIT_REPO@" /tmp/lightning-tmp/variables.conf
+    #echo $STRING_GIT_REPO
   fi
   
-  STRING_GITHUB_SCENARIOS=$(grep "GITHUB_SCENARIOS=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
-  if [[ ${#STRING_GITHUB_SCENARIOS} -ne 0 ]]
+  STRING_GIT_REPO_SCENARIOS=$(grep "GIT_REPO_SCENARIOS=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
+  if [[ ${#STRING_GIT_REPO_SCENARIOS} -ne 0 ]]
   then
-    sed -i "s@GITHUB_SCENARIOS=.*@$STRING_GITHUB_SCENARIOS@" /tmp/lightning-tmp/variables.conf
-    #echo $STRING_GITHUB_SCENARIOS
+    sed -i "s@GIT_REPO_SCENARIOS=.*@$STRING_GIT_REPO_SCENARIOS@" /tmp/lightning-tmp/variables.conf
+    #echo $STRING_GIT_REPO_SCENARIOS
   fi
       
   # ptoribi: the version currently installed in the system will be uninstalled
