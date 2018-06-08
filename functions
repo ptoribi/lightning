@@ -105,8 +105,8 @@ list_scenarios_in_directory() {
     # ptoribi: if the file is a direct execution file (file without extension)
     if [[ $FILE_NAME != *.* ]]
     then
-      # ptoribi: I use cut for removing "# DESCRIPTION:", and tail for removing the following space 
-      DESCRIPTION=$(grep "# DESCRIPTION:" $DIRECTORY/$FILE_NAME | cut -d : -f 2 | tail -c +2)
+      # ptoribi: I use awk for taking all that is after "# DESCRIPTION:", and tail for removing the following space 
+      DESCRIPTION=$(grep "# DESCRIPTION:" $DIRECTORY/$FILE_NAME | awk -F '# DESCRIPTION:' '{print $2}' | tail -c +2)
       if [[ ${#DESCRIPTION} -eq 0 ]]
       then
         DESCRIPTION="[scenario description not available]"
