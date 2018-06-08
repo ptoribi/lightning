@@ -48,8 +48,8 @@ version_header() {
 }
 
 # usage: explore_scenarios
-# description: explore all the directories in $SCENARIOS_PATH listing all the available scenarios
-# NOTE: this function only supports one directory depth level from $SCENARIOS_PATH
+# description: explore all the directories in $SCENARIOS_PATH_LOCAL and $SCENARIOS_PATH listing all the available scenarios
+# NOTE: this function only supports one directory depth level from $SCENARIOS_PATH_LOCAL and $SCENARIOS_PATH
 explore_scenarios() {
   
   local NUMBER_DIRECTORIES
