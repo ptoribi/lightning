@@ -61,7 +61,7 @@ explore_scenarios() {
   for ((i=1; i<=$NUMBER_DIRECTORIES; i++))
   do
     DIRECTORY_NAME=$(ls -l $SCENARIOS_PATH_LOCAL | awk 'NR>1' | grep ^d | awk '{print $9}' | sed -n $i'p')
-    list_scenarios_in_directory $SCENARIOS_PATH_LOCAL/$DIRECTORY_NAME
+    list_scenarios_in_directory $SCENARIOS_PATH_LOCAL $DIRECTORY_NAME
   done
   
   list_scenarios_in_directory $SCENARIOS_PATH
@@ -74,9 +74,9 @@ explore_scenarios() {
   done
 }
 
-# usage: list_scenarios_in_directory DIRECTORY
-# description: list the available scenarios in the specified directory (XML or direct execution scenario files)
-# example: list_scenarios_in_directory $PATH $DIRECTORY
+# usage: list_scenarios_in_directory PATH [DIRECTORY]
+# description: list the available scenarios in the specified path or path+directory (XML or direct execution scenario files)
+# example: list_scenarios_in_directory /usr/local/lightning/scenarios RYSCA
 list_scenarios_in_directory() {
 
   local DIRECTORY=$1/$2
