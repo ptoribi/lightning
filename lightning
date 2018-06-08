@@ -17,7 +17,7 @@
 ##                                                                                           ##
 ###############################################################################################
 
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
 source $LIGHTNING_INSTALLATION_PATH/functions
 source $LIGHTNING_INSTALLATION_PATH/personalized_functions
 
