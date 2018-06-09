@@ -332,7 +332,6 @@ create_router() {
   --hostname=$ROUTER_NAME_LONG \
   --net=none \
   --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-  -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO \
   --cap-drop=ALL `#ptoribi: drop all capabilities in order to have full control by adding one by one.`\
   --cap-add=CHOWN `#Make arbitrary changes to file UIDs and GIDs (see chown(2)).`\
   --cap-add=KILL `#Bypass permission checks for sending signals.`\
