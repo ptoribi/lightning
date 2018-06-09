@@ -422,7 +422,7 @@ create_interface() {
   # Now both internal container interface and external are created, but not connected to any bridge
 }
 
-# usage: connect_machine HOST_NAME INTERFACE_NAME NET_NAME [IP/SM]
+# usage: connect_machine CONTAINER_NAME INTERFACE_NAME NET_NAME [IP/SM]
 # description: connects the specified interface to a network, optionally also configures an IP address
 # requirements: the host and the net had to be already created
 # example: connect_machine h1 eth0 net1 192.168.0.1/24
@@ -503,7 +503,7 @@ disconnect_machine() {
 }
 
 
-# usage: configure_ip HOST_NAME INTERFACE_NAME IP/SM
+# usage: configure_ip CONTAINER_NAME INTERFACE_NAME IP/SM
 # description: adds IPv4 or IPv6 adress to the desired interface
 # example: configure_ip hostA eth1 192.168.0.1/24
 # example: configure_ip hostA eth1 2001:0db8:0:f101::1/64
@@ -643,19 +643,19 @@ delete_networks() {
 }
 
 
-# usage: error_message "blablabla"
+# usage: error_message MESSAGE
 # description: displays the specified text in black with red background
 error_message() {
   echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 0)$(tput setab 1) $1 $(tput sgr 0)
 }
 
-# usage: information_message "blablabla"
+# usage: information_message MESSAGE
 # description: displays the specified text in green
 information_message() {
   echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 2) $1 $(tput sgr 0)
 }
 
-# usage: success_message "blablabla"
+# usage: success_message MESSAGE
 # description: displays the specified text in black with green background
 success_message() {
   echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 0)$(tput setab 2) $1 $(tput sgr 0)
@@ -724,7 +724,7 @@ lightning_purge() {
 }
 
 
-# usage: read_xml [XML_FILE]
+# usage: read_xml XML_FILE
 # description: reads an XML scenario file and creates containers, networks and connections accordingly
 # example: read_xml my_scenario.xml
 read_xml() {
