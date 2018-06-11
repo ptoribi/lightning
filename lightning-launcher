@@ -17,9 +17,9 @@
 ##                                                                                           ##
 ###############################################################################################
 
-# ptoribi: $0 expands the location+name of the file executed (/.../.../file), readlink -f will resolve all possible symbolic links in case they exist, and dirname will remove the last component of the string (file name).
+# ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
 # In the default case: /usr/local/bin/lightning -> /usr/local/lightning/lightning-launcher -> /usr/local/lightning
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 
 # ptoribi: configure the console to use 256 colors
 export TERM=xterm-256color

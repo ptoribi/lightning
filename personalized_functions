@@ -21,7 +21,7 @@
 # Please try:
 #   to use the functions that are already written in the "functions" file
 #   not to duplicate the variables that are already included in the "functions" file
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 source $LIGHTNING_INSTALLATION_PATH/functions
 
 # Personalized Docker repositories 

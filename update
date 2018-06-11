@@ -17,7 +17,7 @@
 ###############################################################################################
 
 
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 source $LIGHTNING_INSTALLATION_PATH/variables.conf
 
 # ptoribi: update the Docker images from DockerHub

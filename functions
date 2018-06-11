@@ -25,9 +25,8 @@ USER_BEHIND_SUDO_HOME_PATH=$(getent passwd $USER_BEHIND_SUDO | cut -d : -f 6)
 SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
 
 # System-related variables
-# ptoribi: $0 expands the name of the shell script, readlink -f will resolve all possible symbolic links and dirname will remove the last component (file name).
-LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $0))
-#LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+# ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
+LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 source $LIGHTNING_INSTALLATION_PATH/variables.conf
 SCENARIOS_PATH=$LIGHTNING_INSTALLATION_PATH/scenarios
 SCENARIOS_PATH_LOCAL=$LIGHTNING_INSTALLATION_PATH/scenarios-local
