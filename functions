@@ -448,7 +448,8 @@ connect_machine() {
 
 
 # usage: connect_machine_physical CONTAINER_NAME INTERFACE_NAME PHYSICAL_INTERFACE [IP/SM]
-# description: connects the specified interface to a physical network interface of the host connect_machine
+# description: connects the specified interface to a physical network interface of the host machine,
+# there is no need to previously create an interface inside the container, this function will do it.
 # using macvlan, optionally also configures an IP address
 # example: connect_machine_physical r1 eth0.0 eth0 192.168.0.1/24
 connect_machine_physical() {
