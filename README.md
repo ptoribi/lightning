@@ -13,8 +13,6 @@ allowed.
 Two Docker images are set by default, called "host" and "router":
 *  **host** is a Debian based image with some programming and network management utilities inside
 *  **router** is a Debian based OS with the Quagga routing suite installed
-Both Docker images will be downloaded and installed into your system using Docker Hub the first time you run a scenario that
-requires them.
 
 ## Compatibility
 Debian 9 x86_64 (compatibility with more OS will be checked in the nearly future)
