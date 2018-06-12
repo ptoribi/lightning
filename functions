@@ -34,6 +34,7 @@ XSD_FILE=$LIGHTNING_INSTALLATION_PATH/lightning-xml-schema.xsd
 QUAGGA_CONFIG_FILES=$LIGHTNING_INSTALLATION_PATH/quagga-config-files
 CONTAINERS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/containers-created.log
 NETWORKS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/networks-created.log
+LIGHTNING_GENERAL_LOG_FILE=$LIGHTNING_INSTALLATION_PATH/lightning.log
 
 # usage: version_header
 # description: shows header displaying version number
@@ -268,7 +269,7 @@ create_host() {
   --cap-add=FOWNER `#Bypass permission checks on operations that normally require the file system UID of the process to match the UID of the file.`\
   --cap-add=DAC_READ_SEARCH `#Bypass file read permission checks and directory read and execute permission checks.`\
   --cap-add=IPC_OWNER `#Bypass permission checks for operations on System V IPC objects.`\
-  $DOCKER_IMAGE_host >> /dev/null
+  $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
   
   #--cap-add=SETPCAP `#Modify process capabilities.`\
   #--cap-add=SETFCAP `#Set file capabilities.`\
@@ -301,7 +302,7 @@ create_host() {
   # ptoribi: allow that user to execute sudo without writting the password each time
   docker exec --user=root $HOST_NAME bash -c "echo $USER_BEHIND_SUDO ALL=\(ALL\) NOPASSWD: ALL >> /etc/sudoers"
   # ptoribi: allows the container to make connections to the X-org server running in the main OS
-  xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $HOST_NAME` >> /dev/null
+  xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $HOST_NAME` >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
   local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $HOST_NAME`
@@ -352,7 +353,7 @@ create_router() {
   --cap-add=FOWNER `#Bypass permission checks on operations that normally require the file system UID of the process to match the UID of the file.`\
   --cap-add=DAC_READ_SEARCH `#Bypass file read permission checks and directory read and execute permission checks.`\
   --cap-add=IPC_OWNER `#Bypass permission checks for operations on System V IPC objects.`\
-  $DOCKER_IMAGE_router >> /dev/null
+  $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
   
   #--cap-add=SETPCAP `#Modify process capabilities.`\
   #--cap-add=SETFCAP `#Set file capabilities.`\
@@ -539,8 +540,8 @@ display_host() {
  fi
  
   # ptoribi: start ssh and telnet service in order to allow incoming connections
-  docker exec --user=root $HOST_NAME bash -c "/etc/init.d/ssh start" >> /dev/null
-  docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> /dev/null
+  docker exec --user=root $HOST_NAME bash -c "/etc/init.d/ssh start" >> $LIGHTNING_GENERAL_LOG_FILE
+  docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> $LIGHTNING_GENERAL_LOG_FILE
 
   xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
 }
@@ -561,10 +562,10 @@ display_router() {
  fi
  
   # ptoribi: start ssh and telnet service in order to allow incoming connections
-  docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/ssh start" >> /dev/null
-  # docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/xinetd start" >> /dev/null
+  docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/ssh start" >> $LIGHTNING_GENERAL_LOG_FILE
+  # docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/xinetd start" >> $LIGHTNING_GENERAL_LOG_FILE
   # ptoribi: the quagga daemon is started
-  docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/quagga start" >> /dev/null
+  docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/quagga start" >> $LIGHTNING_GENERAL_LOG_FILE
 
   xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
 }
@@ -589,7 +590,7 @@ stop_containers() {
         fi
         break
       else
-        docker stop $READEN_LINE >> /dev/null
+        docker stop $READEN_LINE >> $LIGHTNING_GENERAL_LOG_FILE
         if [ $? == 0 ]
         then
           information_message "Container $READEN_LINE successfully stopped"
@@ -694,7 +695,7 @@ lightning_purge() {
   # ptoribi: stop all Docker container running on this system (and what if other containers not related to lightning are also running?, we do not care about the rest of this world)
   if [ -n "$(docker container ls -a -q)" ]
   then
-    docker stop $(docker container ls -a -q) >> /dev/null
+    docker stop $(docker container ls -a -q) >> $LIGHTNING_GENERAL_LOG_FILE
   fi
   
   # ptoribi: set down and destroy all bridges whose name ends with "_br" (this is the bridge name convention used by lightning)
@@ -761,7 +762,7 @@ read_xml() {
   local CONTAINER_HOSTNAME_ARRAY
 
   # ptoribi: first of all, validation. Lightning will not process XML files that do not comply with the Lightning XML Schema.
-  xmllint --schema $XSD_FILE $XML_FILE --noout >> /dev/null
+  xmllint --schema $XSD_FILE $XML_FILE --noout >> $LIGHTNING_GENERAL_LOG_FILE
   if [ $? == 0 ]
   then
     
