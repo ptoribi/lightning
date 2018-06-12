@@ -18,30 +18,16 @@ Two Docker images are set by default, called "host" and "router":
 Debian 9 x86_64 (compatibility with more OS will be checked in the nearly future)
 
 ## Before the installation
-Before installing Lightning please check that your OS counts with the following dependencies:
+Before installing Lightning please check that your OS counts with the following **dependencies**:
 
 * **docker-ce** (Docker Community Edition)
 A complete guide for installing Docker can be found in the official documentation of the project: https://docs.docker.com/
 
 On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your distro and follow the instructions.
 
-* **brctl** (command line tool for ethernet bridges manipulation)
+* **utilities**: brctl(command line tool for ethernet bridges manipulation), xmllint (XML parser), evince (PDF viewer), git
 ```
-$ sudo apt-get install bridge-utils
-```
-* **xmllint** (XML parser)
-```
-$ sudo apt-get install libxml2-utils
-```
-* **evince** (a regular PDF viewer)
-```
-$ sudo apt-get install evince
-```
-* **git** (optional, only if you want to use the git command for downloading Lightning)
-
-Official documentation: https://git-scm.com/download/linux
-```
-$ sudo apt-get install git
+# apt-get install bridge-utils libxml2-utils evince git
 ```
 * **other utilities** that may probably be already installed in your OS:
 ```
