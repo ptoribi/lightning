@@ -293,7 +293,8 @@ create_host() {
 
   # ptoribi: create user inside the container with same uid:gid as the one executing this program
   docker exec --user=root $HOST_NAME groupadd --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $GROUP_OF_USER_BEHIND_SUDO
-  docker exec --user=root $HOST_NAME useradd --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $USER_BEHIND_SUDO
+  docker exec --user=root $HOST_NAME useradd --uid $(id -u $USER_BEHIND_SUDO) --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) 
+  --home-dir /home/$USER_BEHIND_SUDO $USER_BEHIND_SUDO
   
   # ptoribi: add the user to group "wireshark" so dumpcap could be executed by regular users
   docker exec --user=root $HOST_NAME usermod -a -G wireshark $USER_BEHIND_SUDO
