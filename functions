@@ -357,55 +357,51 @@ create_router() {
   local ROUTER_NAME=$1
   local ROUTER_NAME_LONG=$2
 
+  local line_number
+  local READEN_LINE
+  local CAPABILITY
+  # ptoribi: this variable will have the form "--cap-add=CAP1 --cap-add=CAP2 --cap-add=CAP3 ..."
+  local CAP_ADD_CHAIN_LIST
+
+  # ptoribi: populate CAP_ADD_CHAIN_LIST variable with the uncommented capabilities of the file SECURITY_CAPABILITIES_FILE
+  line_number=1
+  if [ -e $SECURITY_CAPABILITIES_FILE ]
+  then
+    while :
+    do
+      # ptoribi: I read the nth line of the file
+      READEN_LINE=$(sed -n ${line_number}p $SECURITY_CAPABILITIES_FILE)
+      if [ -z "$READEN_LINE" ]
+      then
+        break
+      else
+        if [[ $(echo $READEN_LINE | grep -v ^\#) > 0 ]]
+        then
+          # ptoribi: line does not start by #, so it is a line containing a capability
+          # I take the first word of the line, which is actually the capability
+          CAPABILITY=$(echo $READEN_LINE | awk '{print $1}')
+          CAP_ADD_CHAIN_LIST=$CAP_ADD_CHAIN_LIST"--cap-add="$CAPABILITY" "
+          echo "Capability:" $CAPABILITY
+        fi
+        # ptoribi: in bash we use $((...)) for arithmetic expressions
+        # line_number is increased in 1
+        line_number=$((line_number+1))
+      fi
+    done
+  else
+    error_message "$SECURITY_CAPABILITIES_FILE not found!"
+  fi
+
   # ptoribi: run container
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $ROUTER_NAME" after stop
-  docker run -t -d --rm \
-  --name=$ROUTER_NAME \
-  --hostname=$ROUTER_NAME_LONG \
-  --net=none \
-  --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-  --cap-drop=ALL `#ptoribi: drop all capabilities in order to have full control by adding one by one.`\
-  --cap-add=CHOWN `#Make arbitrary changes to file UIDs and GIDs (see chown(2)).`\
-  --cap-add=KILL `#Bypass permission checks for sending signals.`\
-  --cap-add=SETGID `#Make arbitrary manipulations of process GIDs and supplementary GID list.`\
-  --cap-add=SETUID `#Make arbitrary manipulations of process UIDs.`\
-  --cap-add=NET_ADMIN `#Perform various network-related operations.`\
-  --cap-add=NET_RAW `#Use RAW and PACKET sockets.`\
-  --cap-add=NET_BROADCAST `#Make socket broadcasts, and listen to multicasts.`\
-  --cap-add=NET_BIND_SERVICE `#Bind a socket to internet domain privileged ports (port numbers less than 1024).`\
-  --cap-add=SYS_ADMIN `#Perform a range of system administration operations.`\
-  --cap-add=SYS_RAWIO `#Perform I/O port operations (iopl(2) and ioperm(2)).`\
-  --cap-add=SYS_PACCT `#Use acct(2), switch process accounting on or off.`\
-  --cap-add=SYS_PTRACE `#Trace arbitrary processes using ptrace(2).`\
-  --cap-add=SYS_TTY_CONFIG `#Use vhangup(2); employ various privileged ioctl(2) operations on virtual terminals.`\
-  --cap-add=DAC_OVERRIDE `#Bypass file read, write, and execute permission checks.`\
-  --cap-add=AUDIT_WRITE `#Write records to kernel auditing log.`\
-  --cap-add=LEASE `#Establish leases on arbitrary files (see fcntl(2)).`\
-  --cap-add=MKNOD `#Create special files using mknod(2).`\
-  --cap-add=FOWNER `#Bypass permission checks on operations that normally require the file system UID of the process to match the UID of the file.`\
-  --cap-add=DAC_READ_SEARCH `#Bypass file read permission checks and directory read and execute permission checks.`\
-  --cap-add=IPC_OWNER `#Bypass permission checks for operations on System V IPC objects.`\
-  $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
+  # with "--cap-drop=ALL" I will drop all capabilities in order to have full control by adding one by one
+  # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
+  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+  -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
+  $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
 
-  #--cap-add=SETPCAP `#Modify process capabilities.`\
-  #--cap-add=SETFCAP `#Set file capabilities.`\
-  #--cap-add=FSETID `#Don’t clear set-user-ID and set-group-ID permission bits when a file is modified.`\
-  #--cap-add=SYS_CHROOT `#Use chroot(2), change root directory.`\
-  #--cap-add=SYS_MODULE `#Load and unload kernel modules.`\
-  #--cap-add=SYS_NICE `#Raise process nice value (nice(2), setpriority(2)) and change the nice value for arbitrary processes.`\
-  #--cap-add=SYS_RESOURCE `#Override resource Limits.`\
-  #--cap-add=SYS_TIME `#Set system clock (settimeofday(2), stime(2), adjtimex(2)); set real-time (hardware) clock.`\
-  #--cap-add=AUDIT_CONTROL `#Enable and disable kernel auditing; change auditing filter rules; retrieve auditing status and filtering rules.`\
-  #--cap-add=MAC_ADMIN `#Allow MAC configuration or state changes. Implemented for the Smack LSM.`\
-  #--cap-add=MAC_OVERRIDE `#Override Mandatory Access Control (MAC). Implemented for the Smack Linux Security Module (LSM).`\
-  #--cap-add=SYSLOG `#Perform privileged syslog(2) operations.`\
-  #--cap-add=SYS_BOOT `#Use reboot(2) and kexec_load(2), reboot and load a new kernel for later execution.`\
-  #--cap-add=LINUX_IMMUTABLE `#Set the FS_APPEND_FL and FS_IMMUTABLE_FL i-node flags.`\
-  #--cap-add=IPC_LOCK `#Lock memory (mlock(2), mlockall(2), mmap(2), shmctl(2)).`\
-  #--cap-add=WAKE_ALARM `#Trigger something that will wake up the system.`\
-  #--cap-add=BLOCK_SUSPEND `#Employ features that can block system suspend.`\
-
-  # ptoribi: all the previous information about capabilities was taken from the Docker documentation: https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities
+  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+  --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
   local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $ROUTER_NAME`
