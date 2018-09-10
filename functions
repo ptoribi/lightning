@@ -262,7 +262,7 @@ create_host() {
           # I take the first word of the line, which is actually the capability
           CAPABILITY=$(echo $READEN_LINE | awk '{print $1}')
           CAP_ADD_CHAIN_LIST=$CAP_ADD_CHAIN_LIST"--cap-add="$CAPABILITY" "
-          echo "Capability:" $CAPABILITY
+          #echo "Capability:" $CAPABILITY
         fi
         # ptoribi: in bash we use $((...)) for arithmetic expressions
         # line_number is increased in 1
@@ -299,7 +299,7 @@ create_host() {
             # ptoribi: if it is the n>1 command of the list
             SUDO_COMMANDS_CHAIN_LIST=$SUDO_COMMANDS_CHAIN_LIST", "$SUDO_COMMAND
           fi
-          echo "Sudo Command:" $SUDO_COMMAND
+          #echo "Sudo Command:" $SUDO_COMMAND
         fi
         # ptoribi: in bash we use $((...)) for arithmetic expressions
         # line_number is increased in 1
@@ -381,7 +381,7 @@ create_router() {
           # I take the first word of the line, which is actually the capability
           CAPABILITY=$(echo $READEN_LINE | awk '{print $1}')
           CAP_ADD_CHAIN_LIST=$CAP_ADD_CHAIN_LIST"--cap-add="$CAPABILITY" "
-          echo "Capability:" $CAPABILITY
+          #echo "Capability:" $CAPABILITY
         fi
         # ptoribi: in bash we use $((...)) for arithmetic expressions
         # line_number is increased in 1
