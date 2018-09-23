@@ -43,7 +43,7 @@ rm -rf /tmp/lightning-tmp
 mkdir /tmp/lightning-tmp
 
 # ptoribi: the last version of Lightning will be downloaded from GitHub
-git clone $GIT_REPO /tmp/lightning-tmp
+git clone --depth=1 $GIT_REPO /tmp/lightning-tmp
 
 if [ $? == 0 ]
 then
