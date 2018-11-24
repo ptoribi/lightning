@@ -213,22 +213,23 @@ create_container() {
   local CONTAINER_NAME=$1
   local CONTAINER_NAME_LONG=$2
   local TYPE=$3
+  local XML_FILE_WITHOUT_EXTENSION=$(echo $4 | rev | cut --complement -d "." -f 1 | rev) # e.g. from /usr/local/lightning/scenarios/RYSCA/simple_con_router.xml to /usr/local/lightning/scenarios/RYSCA/simple_con_router
 
   if [ $TYPE == "host" ]
   then
-    create_host $CONTAINER_NAME $CONTAINER_NAME_LONG
+    create_host $CONTAINER_NAME $CONTAINER_NAME_LONG $XML_FILE_WITHOUT_EXTENSION
   fi
 
   if [ $TYPE == "router" ]
   then
-    create_router $CONTAINER_NAME $CONTAINER_NAME_LONG
+    create_router $CONTAINER_NAME $CONTAINER_NAME_LONG $XML_FILE_WITHOUT_EXTENSION
   fi
 }
 
 
-# usage: create_host HOST_NAME HOST_NAME_LONG
+# usage: create_host HOST_NAME HOST_NAME_LONG XML_FILE_WITHOUT_EXTENSION
 # description: creates a host with no network interfaces
-# example create_host h1 host1
+# example create_host h1 host1 /usr/local/lightning/scenarios/RYSCA/simple_con_router
 create_host() {
 
   local HOST_NAME=$1
@@ -349,14 +350,16 @@ create_host() {
 }
 
 
-# usage: create_router ROUTER_NAME ROUTER_NAME_LONG
+# usage: create_router ROUTER_NAME ROUTER_NAME_LONG XML_FILE_WITHOUT_EXTENSION
 # description: creates a router with no network interfaces
-# example: create_router r1 router1
+# example: create_router r1 router1 /usr/local/lightning/scenarios/RYSCA/simple_con_router
 create_router() {
 
   local ROUTER_NAME=$1
   local ROUTER_NAME_LONG=$2
-
+  local XML_FILE_WITHOUT_EXTENSION=$3
+  local PATH_TO_CONTAINER_SPECIFIC_CONFIG_FILES=$3"-config_files"/$ROUTER_NAME
+  
   local line_number
   local READEN_LINE
   local CAPABILITY
@@ -409,8 +412,17 @@ create_router() {
   ln -sf /proc/1/ns/net /var/run/netns/default
   ln -sf /proc/$CONTAINER_PID/ns/net /var/run/netns/$ROUTER_NAME
 
-  # ptoribi: the quagga configuration files will be copied to the router container and stored in /etc/quagga
-  docker cp $QUAGGA_CONFIG_FILES/quagga $ROUTER_NAME:/etc
+  # ptoribi: copy quagga configuration files to the router container
+  if [ -d "$PATH_TO_CONTAINER_SPECIFIC_CONFIG_FILES/quagga" ]; then
+    # ptoribi: the common quagga configuration files will be copied to the router container and stored in /etc/quagga
+    docker cp $QUAGGA_CONFIG_FILES/quagga $ROUTER_NAME:/etc
+    # ptoribi: if directory for storing specific config files for this container "SCENARIO_NAME-config_files/quagga" exists, these files will be copied to /etc/quagga and will overwrite the common quagga configuration files
+    docker cp $PATH_TO_CONTAINER_SPECIFIC_CONFIG_FILES/quagga $ROUTER_NAME:/etc
+  else
+    # ptoribi: the common quagga configuration files will be copied to the router container and stored in /etc/quagga
+    docker cp $QUAGGA_CONFIG_FILES/quagga $ROUTER_NAME:/etc
+  fi
+  
   #docker cp $LIGHTNING_INSTALLATION_PATH/other/vtysh_persistent $ROUTER_NAME:/usr/bin
   # ptoribi: all the config files must be owned by user and group "quagga" in order to work
   docker exec --user=root $ROUTER_NAME bash -c "chown -R quagga:quagga /etc/quagga"
@@ -755,7 +767,7 @@ lightning_purge() {
 
 # usage: read_xml XML_FILE
 # description: reads an XML scenario file and creates containers, networks and connections accordingly
-# example: read_xml my_scenario.xml
+# example: read_xml /usr/local/lightning/scenarios/RYSCA/simple_con_router.xml -> 
 read_xml() {
 
   local XML_FILE=$1
@@ -803,7 +815,7 @@ read_xml() {
       if [[ ${#CONTAINER_hostname} -eq 0 ]]; then CONTAINER_hostname=$CONTAINER; fi
       CONTAINER_type=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@type)' $XML_FILE)
       #echo $'\n'$CONTAINER $(tput setaf 240)\(\"$CONTAINER_hostname\", $CONTAINER_type\)$(tput sgr 0)
-      create_container $CONTAINER $CONTAINER_hostname $CONTAINER_type
+      create_container $CONTAINER $CONTAINER_hostname $CONTAINER_type $XML_FILE
 
       CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
       while [[ ${#CONTAINER_INTERFACE} -ne 0 ]]
