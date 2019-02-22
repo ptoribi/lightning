@@ -318,7 +318,7 @@ create_host() {
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $HOST_NAME" after stop
   # with "--cap-drop=ALL" I will drop all capabilities in order to have full control by adding one by one
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
-  # net.ipv6.conf.all.disable_ipv6=0 enables IPv6
+  # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
   -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
   $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
@@ -400,8 +400,8 @@ create_router() {
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $ROUTER_NAME" after stop
   # with "--cap-drop=ALL" I will drop all capabilities in order to have full control by adding one by one
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
-  # net.ipv6.conf.all.disable_ipv6=0 enables IPv6
-  # net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
+  # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
+  # --sysctl net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
   docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.all.forwarding=1 \
   --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
