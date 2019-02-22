@@ -318,6 +318,7 @@ create_host() {
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $HOST_NAME" after stop
   # with "--cap-drop=ALL" I will drop all capabilities in order to have full control by adding one by one
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
+  # net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
   -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
   $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
@@ -359,7 +360,7 @@ create_router() {
   local ROUTER_NAME_LONG=$2
   local XML_FILE_WITHOUT_EXTENSION=$3
   local PATH_TO_CONTAINER_SPECIFIC_CONFIG_FILES=$3"-config_files"/$ROUTER_NAME
-  
+
   local line_number
   local READEN_LINE
   local CAPABILITY
@@ -399,11 +400,9 @@ create_router() {
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $ROUTER_NAME" after stop
   # with "--cap-drop=ALL" I will drop all capabilities in order to have full control by adding one by one
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
-  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-  -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
-  $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
-
-  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+  # net.ipv6.conf.all.disable_ipv6=0 enables IPv6
+  # net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
+  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 net.ipv6.conf.all.forwarding=1 \
   --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
@@ -422,7 +421,7 @@ create_router() {
     # ptoribi: the common quagga configuration files will be copied to the router container and stored in /etc/quagga
     docker cp $QUAGGA_CONFIG_FILES/quagga $ROUTER_NAME:/etc
   fi
-  
+
   #docker cp $LIGHTNING_INSTALLATION_PATH/other/vtysh_persistent $ROUTER_NAME:/usr/bin
   # ptoribi: all the config files must be owned by user and group "quagga" in order to work
   docker exec --user=root $ROUTER_NAME bash -c "chown -R quagga:quagga /etc/quagga"
@@ -767,7 +766,7 @@ lightning_purge() {
 
 # usage: read_xml XML_FILE
 # description: reads an XML scenario file and creates containers, networks and connections accordingly
-# example: read_xml /usr/local/lightning/scenarios/RYSCA/simple_con_router.xml -> 
+# example: read_xml /usr/local/lightning/scenarios/RYSCA/simple_con_router.xml ->
 read_xml() {
 
   local XML_FILE=$1
