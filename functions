@@ -402,7 +402,7 @@ create_router() {
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
   # net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
-  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 net.ipv6.conf.all.forwarding=1 \
+  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.all.forwarding=1 \
   --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
