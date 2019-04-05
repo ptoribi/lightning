@@ -20,6 +20,7 @@
 # ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
 # In the default case: /usr/local/bin/lightning -> /usr/local/lightning/lightning-launcher -> /usr/local/lightning
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
+source $LIGHTNING_INSTALLATION_PATH/variables.conf
 
 # ptoribi: configure the console to use 256 colors
 export TERM=xterm-256color
@@ -36,11 +37,13 @@ if [ $(logname)!="root" -a $(whoami)!="root" ]
 then
   # ptoribi: the program was executed as a regular user
   # I use "$@" for propagating all the arguments among scripts.
+  mkdir -p $HOME/$SHARED_FOLDER_NAME
   sudo $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 elif [ $(logname)!="root" -a $(whoami)=="root" ]
 then
   # ptoribi: the program was executed as a regular user with sudo
   # I use "$@" for propagating all the arguments among scripts.
+  mkdir -p $HOME/$SHARED_FOLDER_NAME
   $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 elif [ $(logname)=="root" -a $(whoami)=="root" ]
 then

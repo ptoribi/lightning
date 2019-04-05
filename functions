@@ -311,8 +311,12 @@ create_host() {
     error_message "$SECURITY_SUDO_COMMANDS_FILE not found!"
   fi
 
-  mkdir -p $SHARED_FOLDER
-  chown $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO $SHARED_FOLDER
+  #echo USER_BEHIND_SUDO: $USER_BEHIND_SUDO
+  #runuser -l $USER_BEHIND_SUDO -c 'mkdir -p $HOME/$SHARED_FOLDER'
+  #su -l $USER_BEHIND_SUDO -c "mkdir -p $HOME/$SHARED_FOLDER"
+  # sudo -u $USER_BEHIND_SUDO mkdir -p $HOME/$SHARED_FOLDER
+  #mkdir -p $SHARED_FOLDER
+  #chown $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO $SHARED_FOLDER
 
   # ptoribi: run container with X-org forwarding support (I will try to make the same stuff but with wayland later) and $SHARED_FOLDER mounted as the home of the container
   # --rm means the container will be destroyed when stopped, no need to make "docker rm $HOST_NAME" after stop
