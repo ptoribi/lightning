@@ -49,6 +49,13 @@ if [ $? == 0 ]
 then
 
   # ptoribi: the following lines will set the old values of the variables in the new configuration file
+  STRING_SHARED_FOLDER_LOCATION=$(grep "SHARED_FOLDER_LOCATION=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
+  if [[ ${#STRING_SHARED_FOLDER_LOCATION} -ne 0 ]]
+  then
+    sed -i -e "s@SHARED_FOLDER_TYPE.*@$STRING_SHARED_FOLDER_LOCATION@" /tmp/lightning-tmp/variables.conf
+    #echo $STRING_SHARED_FOLDER_NAME
+  fi
+
   STRING_SHARED_FOLDER_NAME=$(grep "SHARED_FOLDER_NAME=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
   if [[ ${#STRING_SHARED_FOLDER_NAME} -ne 0 ]]
   then

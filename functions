@@ -22,7 +22,6 @@ GROUP_OF_USER_BEHIND_SUDO=$(id -g -n $USER_BEHIND_SUDO)
 # ptoribi: getent also works with remote authentication servers (LDAP, etc.)
 # from "getent passwd" output: user:x:1000:1000:user,,,:/home/user:/bin/bash -> I extract the 6th field delimited by ":" (user's home path)
 USER_BEHIND_SUDO_HOME_PATH=$(getent passwd $USER_BEHIND_SUDO | cut -d : -f 6)
-SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
 
 # System-related variables
 # ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
@@ -37,6 +36,13 @@ NETWORKS_CREATED_FILE=$LIGHTNING_INSTALLATION_PATH/networks-created.log
 LIGHTNING_GENERAL_LOG_FILE=$LIGHTNING_INSTALLATION_PATH/lightning.log
 SECURITY_CAPABILITIES_FILE=$LIGHTNING_INSTALLATION_PATH/security/container_capabilities.conf
 SECURITY_SUDO_COMMANDS_FILE=$LIGHTNING_INSTALLATION_PATH/security/sudo_commands.conf
+
+if [[ $SHARED_FOLDER_LOCATION == "TMP" ]]
+then
+  SHARED_FOLDER=/tmp/$USER_BEHIND_SUDO/$SHARED_FOLDER_NAME
+else
+  SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
+fi
 
 # usage: version_header
 # description: shows header displaying version number
