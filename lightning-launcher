@@ -44,22 +44,28 @@ export TERM=xterm-256color
 # ptoribi: execution sequence
 # lightning (symlink) ----> lightning-launcher ----> sudo lightning (main program)
 
-if [ $(logname)!="root" -a $(whoami)!="root" ]
+# $EUID is 0 when the user logged in as root (directly or using su), but not when using the sudo command
+if [ $(logname) != "root" -a $(whoami) != "root" ]
 then
   # ptoribi: the program was executed as a regular user
   # I use "$@" for propagating all the arguments among scripts.
   mkdir -p $SHARED_FOLDER
-  sudo $LIGHTNING_INSTALLATION_PATH/lightning "$@"
+  sudo -i $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 
-elif [ $(logname)!="root" -a $(whoami)=="root" ]
+elif [ $(logname) != "root" -a $(whoami) == "root" ]
 then
   # ptoribi: the program was executed as a regular user with sudo
   # I use "$@" for propagating all the arguments among scripts.
   mkdir -p $SHARED_FOLDER
   $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 
-elif [ $(logname)=="root" -a $(whoami)=="root" ]
+elif [ $(logname) == "root" -a $(whoami) == "root" ]
 then
   # ptoribi: the program was executed as root directly
-  echo $(tput setaf 220)[lightning-launcher]:$(tput sgr 0) $(tput setaf 0)$(tput setab 1) Execution of this program directly as root is not supported. $(tput sgr 0)
+  if [ -n "$1" -a "$1" == "update" ]
+  then
+    $LIGHTNING_INSTALLATION_PATH/update
+  else
+    echo $(tput setaf 220)[lightning-launcher]:$(tput sgr 0) $(tput setaf 0)$(tput setab 1) Execution of this program directly as root is not supported. $(tput sgr 0)
+  fi
 fi

@@ -24,6 +24,9 @@ source $LIGHTNING_INSTALLATION_PATH/personalized_functions
 
 #echo $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO is executing Lightning, please enjoy!
 
+# ptoribi: create folder for storing the logs
+mkdir -p $LOGS_LOCATION
+
 if [ "$#" -eq 0 ]
 then
   # Display header showing version number
