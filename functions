@@ -592,7 +592,8 @@ display_host() {
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/ssh start" >> $LIGHTNING_GENERAL_LOG_FILE
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> $LIGHTNING_GENERAL_LOG_FILE
 
-  xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+  #xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+  mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
 }
 
 
@@ -616,7 +617,8 @@ display_router() {
   # ptoribi: the quagga daemon is started
   docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/quagga start" >> $LIGHTNING_GENERAL_LOG_FILE
 
-  xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+  #xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+  mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
 }
 
 
