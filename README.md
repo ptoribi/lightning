@@ -59,17 +59,17 @@ $ sudo usermod -a -G sudo USER_NAME
 ```
 * **Allowing that specific user to execute Lightning:**
 ```
-$ sudo bash -c "echo 'USER_NAME ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))/lightning' >> /etc/sudoers"
+$ sudo bash -c "echo 'USER_NAME ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 ```
 * **Creating a new group and allowing all its members to execute Lightning, then adding the specific user to that group:**
 ```
 $ sudo groupadd GROUP_NAME
-$ sudo bash -c "echo '%GROUP_NAME ALL=NOPASSWD: $(dirname $(readlink -f $(which lightning)))/lightning' >> /etc/sudoers"
+$ sudo bash -c "echo '%GROUP_NAME ALL=NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 $ sudo usermod -a -G GROUP_NAME USER_NAME
 ```
 * **Allowing all the users in the system to execute Lightning:**
 ```
-$ sudo bash -c "echo 'ALL ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))/lightning' >> /etc/sudoers"
+$ sudo bash -c "echo 'ALL ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 ```
 
 ## Uninstall the program
