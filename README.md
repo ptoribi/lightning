@@ -27,7 +27,7 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 
 * **utilities**: brctl (command line tool for ethernet bridges manipulation), xmllint (XML parser), evince (PDF viewer), git
 ```
-# apt-get install bridge-utils libxml2-utils evince git
+# apt-get install bridge-utils libxml2-utils evince git mate-terminal
 ```
 * **other utilities** that may probably be already installed in your OS:
 ```
