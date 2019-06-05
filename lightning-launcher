@@ -17,6 +17,20 @@
 ##                                                                                           ##
 ###############################################################################################
 
+# ptoribi: differences between the output of the commands logname and whoami depending on how the script was launched:
+# 1.- as a regular user (user)
+# 2.- using the command sudo (sudo)
+# 3.- directly as root: logged in the session as root directly, not using su -l or similar (root)
+#
+#      | logname | whoami |
+# -------------------------
+# user | "user"  | "user" |
+# sudo | "user"  | "root" |
+# root | "root"  | "root" |
+
+#echo "lightning-launcher --> logname: $(logname)"
+#echo "lightning-launcher --> whoami:  $(whoami)"
+
 # ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
 # In the default case: /usr/local/bin/lightning -> /usr/local/lightning/lightning-launcher -> /usr/local/lightning
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
@@ -50,7 +64,7 @@ then
   # ptoribi: the program was executed as a regular user
   # I use "$@" for propagating all the arguments among scripts.
   mkdir -p $SHARED_FOLDER
-  sudo -i $LIGHTNING_INSTALLATION_PATH/lightning "$@"
+  sudo $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 
 elif [ $(logname) != "root" -a $(whoami) == "root" ]
 then
