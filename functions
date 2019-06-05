@@ -152,6 +152,14 @@ usage_message() {
   echo "  at $(tput setaf 13)$SHARED_FOLDER$(tput sgr 0) in your main system, and will"
   echo "  be mounted as $(tput setaf 5)/home/$USER_BEHIND_SUDO$(tput sgr 0) inside the simulated host systems."
   echo ""
+
+  if [[ $SHARED_FOLDER_LOCATION == "TMP" ]]
+  then
+    echo "  $(tput setaf 196)WARNING!!$(tput sgr 0) the /tmp folder is wiped every time the Linux OS is restarted: please"
+    echo "  backup the content of $(tput setaf 13)$SHARED_FOLDER$(tput sgr 0) in your home folder"
+    echo "  after using lightning if you don't want to lose all your files."
+    echo ""
+  fi
 }
 
 # description: disables ipv6 for one interface in the specified container (container should have been started in "privileged" mode)
