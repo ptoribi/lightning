@@ -17,6 +17,9 @@
 ##                                                                                           ##
 ###############################################################################################
 
+#echo "lightning --> logname: $(logname)"
+#echo "lightning --> whoami:  $(whoami)"
+
 # ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
 source $LIGHTNING_INSTALLATION_PATH/functions
@@ -38,6 +41,8 @@ else
   if [ "$#" -eq 1 ] && [ $1 == "stop" ]
   then
     lightning_stop
+    # ptoribi: I remove the root from the list of local users allowed to make connections to the X server
+    xhost -SI:localuser:root >> /dev/null
   # Purge
   elif [ "$#" -eq 1 ] && [ $1 == "purge" ]
   then
@@ -58,10 +63,13 @@ else
     # ptoribi: execute scenario and show related .pdf file if present in "scenarios"
     if [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
     then
+
+      # ptoribi: I add the root to the list of local users allowed to make connections to the X server
+      xhost +SI:localuser:root >> /dev/null
     
       if [ -e $SCENARIOS_PATH/$2.pdf ]
       then
-        evince $SCENARIOS_PATH/$2.pdf &
+        evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
       fi
       
       if [ -e $SCENARIOS_PATH/$2.xml ]
@@ -80,9 +88,15 @@ else
     # ptoribi: execute scenario and show related .pdf file if present in "scenarios-local"
     elif [[ -e $SCENARIOS_PATH_LOCAL/$2 || -e $SCENARIOS_PATH_LOCAL/$2.xml ]]
     then
+
+      # ptoribi: I add the root to the list of local users allowed to make connections to the X server
+      xhost +SI:localuser:root >> /dev/null
+
       if [ -e $SCENARIOS_PATH_LOCAL/$2.pdf ]
       then
-        evince $SCENARIOS_PATH_LOCAL/$2.pdf &
+        # ptoribi: adding 2>/dev/null at the end of the command redirects filehandle 2 (STDERR) to /dev/null
+        # taken from https://unix.stackexchange.com/questions/192042/how-do-i-suppress-error-messages-from-cp
+        evince $SCENARIOS_PATH_LOCAL/$2.pdf 2>/dev/null &
       fi
       
       if [ -e $SCENARIOS_PATH_LOCAL/$2.xml ]

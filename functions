@@ -15,6 +15,8 @@
 ##                                                                                           ##
 ###############################################################################################
 
+#echo "functions --> logname: $(logname)"
+#echo "functions --> whoami:  $(whoami)"
 
 # User-related variables
 USER_BEHIND_SUDO=$(logname)
@@ -345,8 +347,6 @@ create_host() {
   # ptoribi: allow that user to execute sudo without writting the password each time
   docker exec --user=root $HOST_NAME bash -c "echo \#Added by Lightning: >> /etc/sudoers"
   docker exec --user=root $HOST_NAME bash -c "echo $USER_BEHIND_SUDO ALL=\(ALL\) NOPASSWD: $SUDO_COMMANDS_CHAIN_LIST >> /etc/sudoers"
-  # ptoribi: allows the container to make connections to the X-org server running in the main OS
-  xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $HOST_NAME` >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
   local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $HOST_NAME`
