@@ -135,5 +135,6 @@ else
   echo $(tput setaf 0)$(tput setab 1) "Error while getting lightning from GitHub, are you connected to the internet?" $(tput sgr 0)
 fi
 
-# ptoribi: remove temporal folder
+# ptoribi: remove temporal folders
 rm -rf /tmp/lightning-tmp
+rm -rf /tmp/security-tmp
