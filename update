@@ -25,14 +25,6 @@ source $LIGHTNING_INSTALLATION_PATH/functions
 #docker pull $DOCKER_IMAGE_host
 #docker pull $DOCKER_IMAGE_router
 
-# ptoribi: check if the user who executes the update is allowed to do so
-# echo logname:$(logname) whoami:$(whoami)
-if [ "$WHO_CAN_UPDATE" == "ROOT" -a $(logname) != "root" ]
-then
-  error_message "The administrator configured lightning so only ROOT can perform updates, see the variables.conf file for more details"
-  exit
-fi
-
 # ptoribi: prepare a folder in /tmp for saving files contained in scenarios-local
 rm -rf /tmp/scenarios-local-tmp
 mkdir /tmp/scenarios-local-tmp
@@ -98,13 +90,6 @@ then
   then
     sed -i "s@GIT_REPO_SCENARIOS=.*@$STRING_GIT_REPO_SCENARIOS@" /tmp/lightning-tmp/variables.conf
     #echo $STRING_GIT_REPO_SCENARIOS
-  fi
-
-  STRING_WHO_CAN_UPDATE=$(grep "WHO_CAN_UPDAT=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
-  if [[ ${#STRING_WHO_CAN_UPDAT} -ne 0 ]]
-  then
-    sed -i "s@WHO_CAN_UPDATE=.*@$STRING_WHO_CAN_UPDATE@" /tmp/lightning-tmp/variables.conf
-    #echo $STRING_WHO_CAN_UPDATE
   fi
 
   STRING_LOGS_LOCATION=$(grep "LOGS_LOCATION=" $LIGHTNING_INSTALLATION_PATH/variables.conf)
