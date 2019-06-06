@@ -58,6 +58,12 @@ export TERM=xterm-256color
 # ptoribi: execution sequence
 # lightning (symlink) ----> lightning-launcher ----> sudo lightning (main program)
 
+if [ $# -eq 0 ]
+then
+  $LIGHTNING_INSTALLATION_PATH/lightning
+  exit
+fi
+
 if [ -n "$1" -a "$1" == "update" ]
 then
   if [ $(whoami) != "root" ]
