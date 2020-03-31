@@ -18,8 +18,13 @@
 #echo "functions --> logname: $(logname)"
 #echo "functions --> whoami:  $(whoami)"
 
+function log_name() {
+    [ -n "$SUDO_USER" ] && echo $SUDO_USER
+    [ -z "$SUDO_USER" ] && id -un
+}
+
 # User-related variables
-USER_BEHIND_SUDO=$(logname)
+USER_BEHIND_SUDO=$(log_name)
 GROUP_OF_USER_BEHIND_SUDO=$(id -g -n $USER_BEHIND_SUDO)
 # ptoribi: getent also works with remote authentication servers (LDAP, etc.)
 # from "getent passwd" output: user:x:1000:1000:user,,,:/home/user:/bin/bash -> I extract the 6th field delimited by ":" (user's home path)

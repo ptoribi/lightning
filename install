@@ -30,7 +30,7 @@ LIGHTNING_INSTALLATION_DIRECTORY=/usr/local
 SYMLINK_INSTALLATION_DIRECTORY=/usr/local/bin
 
 # ptoribi: only root or regular users with "sudo" can install lightning
-if [[ $(logname) == "root" ]] || [[ $(whoami) == "root" ]]
+if [[ -n "$SUDO_USER" ]] || [[ $(whoami) == "root" ]]
 then
   # ptoribi: create a directory for storing the program
   mkdir -p $LIGHTNING_INSTALLATION_DIRECTORY/lightning
