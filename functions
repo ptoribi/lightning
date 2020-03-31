@@ -726,6 +726,16 @@ success_message() {
   echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 0)$(tput setab 2) $1 $(tput sgr 0)
 }
 
+kill_evince() {
+    EVINCE_PID=$(ps -ef | awk '/evince.*lightning/{ if ($9 ~ "local/lightning") print $2;}')
+    if [ -z "$EVINCE_PID" ]
+    then
+	error_message "No scenario picture"
+    else
+	kill -9 $EVINCE_PID
+	success_message "Closed scenario picture"
+    fi
+}
 
 # usage: lightning_stop
 # description: executes stop_containers and delete_networks and sfter that deletes both log files
@@ -735,14 +745,17 @@ lightning_stop() {
   then
     stop_containers
     delete_networks
+    kill_evince
     success_message "Scenario successfully stopped"
   elif [ -e $CONTAINERS_CREATED_FILE ]
   then
     stop_containers
+    kill_evince
     success_message "Scenario successfully stopped"
   elif [ -e $NETWORKS_CREATED_FILE ]
   then
     delete_networks
+    kill_evince
     success_message "Scenario successfully stopped"
   else
     error_message "There is currently no scenario running to be stopped"
