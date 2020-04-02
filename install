@@ -59,7 +59,7 @@ then
     echo $(tput setaf 0)$(tput setab 1) "Error while getting scenarios from GitHub, are you connected to the internet?" $(tput sgr 0)
   fi
 
-  # ptoribi: download & install the Docker images from DockerHub
+  # ptoribi: download & install / update the Docker images from DockerHub
   docker pull $DOCKER_IMAGE_host
   docker pull $DOCKER_IMAGE_router
   
