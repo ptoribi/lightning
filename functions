@@ -875,7 +875,10 @@ read_xml() {
 
         if [ $CONTAINER_INTERFACE_enable_ipv6 == "no" ]
         then
+          # ptoribi: disables IPv6 via sysctl for that interface
           disable_ipv6 $CONTAINER $CONTAINER_INTERFACE
+          # ptoribi: clears the default link-local IPv6 by removing all the IPs from the interface
+          clear_interface $CONTAINER $CONTAINER_INTERFACE
         fi
 
         if [ $CONTAINER_INTERFACE_enable_ipv6 == "yes" ] && [ $CONTAINER_INTERFACE_link_local_ipv6 == "no" ]
