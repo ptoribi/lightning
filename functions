@@ -955,6 +955,9 @@ read_xml() {
     done
     NETWORK_INDEX=1
 
+    # ptoribi: allow FORWARDING in ipsec (necessary for IPv6 forwarding in routers), source: https://docs.docker.com/network/iptables/
+    iptables -I DOCKER-USER -j ACCEPT
+
     # ptoribi: display the xterm window of all containers
     for index in "${!CONTAINER_NAME_ARRAY[@]}"
     do
