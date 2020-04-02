@@ -24,23 +24,7 @@ Before installing Lightning please check that your OS counts with the following 
 A complete guide for installing Docker can be found in the official documentation of the project: https://docs.docker.com/
 
 On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your distro and follow the instructions.
-
-Remember to enable IPv6 support in Docker.
-
-Edit `/etc/docker/daemon.json` (as sudo) and add
-
 ```
-{
-	"ipv6": true,
-	"fixed-cidr-v6": "fe80:1::1/64"
-}
-```
-
-Then reload the docker daemon configuration with
-```
-sudo systemctl reload docker
-```
-
 * **utilities**: brctl (command line tool for ethernet bridges manipulation), xmllint (XML parser), evince (PDF viewer), git
 ```
 # apt-get install bridge-utils libxml2-utils evince git mate-terminal

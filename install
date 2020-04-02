@@ -36,10 +36,12 @@ then
   mkdir -p $LIGHTNING_INSTALLATION_DIRECTORY/lightning
   # ptoribi: enter into the installer folder
   cd $(dirname $(readlink -f $0))
-  # ptoribi: copy all the files but the installer, the personalized_functions file, the README.md file and the screenshots to that directory (and overwrite previous versions of the files if present)
-  cp -rf $(ls | grep -vw "install\|personalized_functions\|README.md\|screenshots") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
+  # ptoribi: copy all the files but the installer, the personalized_functions file, the README.md file, the screenshots and the xtras to that directory (and overwrite previous versions of the files if present)
+  cp -rf $(ls | grep -vw "install\|personalized_functions\|README.md\|screenshots\|xtras") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
   # ptoribi: copy the personalized_functions file only if it is not already installed (do not overwrite)
   cp -n personalized_functions $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
+  # ptoribi: install the docker.json (dockerd options) file into /etc/docker/
+  cp security/docker.json /etc/docker/
   # ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
   ln -sf $LIGHTNING_INSTALLATION_DIRECTORY/lightning/lightning-launcher $SYMLINK_INSTALLATION_DIRECTORY/lightning
 
@@ -60,6 +62,9 @@ then
   # ptoribi: download & install the Docker images from DockerHub
   docker pull $DOCKER_IMAGE_host
   docker pull $DOCKER_IMAGE_router
+  
+  # ptoribi: restart Docker daemon
+  systemctl reload docker
 
 else
   echo $(tput setaf 0)$(tput setab 1) "Lightnig has to be installed as root or using "sudo"" $(tput sgr 0)
