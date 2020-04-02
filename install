@@ -44,9 +44,11 @@ then
   if [[ -f "/etc/docker/daemon.json" ]]; then
     cp /etc/docker/daemon.json /etc/docker/daemon.json.backup
     rm /etc/docker/daemon.json 
+
+    # ptoribi: reload the Docker configuration file
+    systemctl reload docker
   fi
-  # ptoribi: reload the Docker configuration
-  systemctl reload docker
+  
   # ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
   ln -sf $LIGHTNING_INSTALLATION_DIRECTORY/lightning/lightning-launcher $SYMLINK_INSTALLATION_DIRECTORY/lightning
 
