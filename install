@@ -40,8 +40,8 @@ then
   cp -rf $(ls | grep -vw "install\|personalized_functions\|README.md\|screenshots\|xtras") $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
   # ptoribi: copy the personalized_functions file only if it is not already installed (do not overwrite)
   cp -n personalized_functions $LIGHTNING_INSTALLATION_DIRECTORY/lightning/
-  # ptoribi: install the docker.json (dockerd options) file into /etc/docker/
-  cp security/docker.json /etc/docker/
+  # ptoribi: install the daemon.json (dockerd options) file into /etc/docker/
+  cp security/daemon.json /etc/docker/
   # ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
   ln -sf $LIGHTNING_INSTALLATION_DIRECTORY/lightning/lightning-launcher $SYMLINK_INSTALLATION_DIRECTORY/lightning
 
