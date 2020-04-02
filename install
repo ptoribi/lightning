@@ -45,7 +45,8 @@ then
     cp /etc/docker/daemon.json /etc/docker/daemon.json.backup
     rm /etc/docker/daemon.json 
   fi
-  cp security/daemon.json /etc/docker/
+  # ptoribi: reload the Docker configuration
+  systemctl reload docker
   # ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
   ln -sf $LIGHTNING_INSTALLATION_DIRECTORY/lightning/lightning-launcher $SYMLINK_INSTALLATION_DIRECTORY/lightning
 
@@ -66,9 +67,6 @@ then
   # ptoribi: download & install / update the Docker images from DockerHub
   docker pull $DOCKER_IMAGE_host
   docker pull $DOCKER_IMAGE_router
-  
-  # ptoribi: reload the Docker configuration file
-  systemctl reload docker
 
 else
   echo $(tput setaf 0)$(tput setab 1) "Lightnig has to be installed as root or using "sudo"" $(tput sgr 0)
