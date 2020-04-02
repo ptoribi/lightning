@@ -63,7 +63,7 @@ then
   docker pull $DOCKER_IMAGE_host
   docker pull $DOCKER_IMAGE_router
   
-  # ptoribi: restart Docker daemon
+  # ptoribi: reload the Docker configuration file
   systemctl reload docker
 
 else
