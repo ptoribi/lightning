@@ -167,17 +167,6 @@ usage_message() {
   fi
 }
 
-# description: disables ipv6 for one interface in the specified container (container should have been started in "privileged" mode)
-# usage: disable_ipv6 CONTAINER_NAME INTERFACE_NAME
-# example: disable_ipv6 pc1 eth1
-disable_ipv6() {
-
-  local $CONTAINER_NAME=$1
-  local $INTERFACE_NAME=$2
-
-  docker exec --user=root $CONTAINER_NAME sysctl -w net.ipv6.conf.$INTERFACE_NAME.disable_ipv6=1
-}
-
 
 # description: clears all IP addresses present in the selected interface
 # usage: clear_interface CONTAINER_NAME INTERFACE_NAME
@@ -824,7 +813,7 @@ read_xml() {
   local CONTAINER_hostname                    # Will store attribute @hostname of a container         [OPTIONAL] [DEFAULT=@name]
   local CONTAINER_type                        # Will store attribute @type of a container             [REQUIRED]
   local CONTAINER_INTERFACE                   # Will store attribute @name of an interface            [REQUIRED]
-  local CONTAINER_INTERFACE_enable_ipv6       # Will store attribute @enable_ipv6 of an interface     [OPTIONAL] [DEFAULT="yes"]
+  #local CONTAINER_INTERFACE_enable_ipv6       # Will store attribute @enable_ipv6 of an interface     [OPTIONAL] [DEFAULT="yes"]
   local CONTAINER_INTERFACE_link_local_ipv6   # Will store attribute @link_local_ipv6 of an interface [OPTIONAL] [DEFAULT="yes"]
   local CONTAINER_INTERFACE_connected_to_physical_interface   # Will store attribute @connected_to_physical_interface of an interface [OPTIONAL]
   local CONTAINER_INTERFACE_DEFAULT_IP        # Will store the content of a default_ip element        [OPTIONAL]
@@ -857,9 +846,6 @@ read_xml() {
       CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
       while [[ ${#CONTAINER_INTERFACE} -ne 0 ]]
       do
-        CONTAINER_INTERFACE_enable_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@enable_ipv6)' $XML_FILE)
-        # ptoribi: set default value for @enable_ipv6
-        if [[ ${#CONTAINER_INTERFACE_enable_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_enable_ipv6="yes"; fi
         CONTAINER_INTERFACE_link_local_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@link_local_ipv6)' $XML_FILE)
 
         # ptoribi: set default value for @link_local_ipv6
@@ -873,20 +859,12 @@ read_xml() {
           create_interface $CONTAINER $CONTAINER_INTERFACE
         fi
 
-        if [ $CONTAINER_INTERFACE_enable_ipv6 == "no" ]
+        if [ $CONTAINER_INTERFACE_link_local_ipv6 == "no" ]
         then
-          # ptoribi: disables IPv6 via sysctl for that interface
-          disable_ipv6 $CONTAINER $CONTAINER_INTERFACE
           # ptoribi: clears the default link-local IPv6 by removing all the IPs from the interface
           clear_interface $CONTAINER $CONTAINER_INTERFACE
         fi
 
-        if [ $CONTAINER_INTERFACE_enable_ipv6 == "yes" ] && [ $CONTAINER_INTERFACE_link_local_ipv6 == "no" ]
-        then
-          clear_interface $CONTAINER $CONTAINER_INTERFACE
-        fi
-
-        #echo "  "$CONTAINER_INTERFACE $(tput setaf 240)\(enable_ipv6=\"$CONTAINER_INTERFACE_enable_ipv6\", link_local_ipv6=\"$CONTAINER_INTERFACE_link_local_ipv6\"\)$(tput sgr 0)
         CONTAINER_INTERFACE_DEFAULT_IP=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface[./@name="'"$CONTAINER_INTERFACE"'"]/default_ip['$CONTAINER_INTERFACE_DEFAULT_IP_INDEX'])' $XML_FILE)
         while [[ ${#CONTAINER_INTERFACE_DEFAULT_IP} -ne 0 ]]
         do
