@@ -18,8 +18,13 @@
 #echo "functions --> logname: $(logname)"
 #echo "functions --> whoami:  $(whoami)"
 
+function log_name() {
+    [ -n "$SUDO_USER" ] && echo $SUDO_USER
+    [ -z "$SUDO_USER" ] && id -un
+}
+
 # User-related variables
-USER_BEHIND_SUDO=$(logname)
+USER_BEHIND_SUDO=$(log_name)
 GROUP_OF_USER_BEHIND_SUDO=$(id -g -n $USER_BEHIND_SUDO)
 # ptoribi: getent also works with remote authentication servers (LDAP, etc.)
 # from "getent passwd" output: user:x:1000:1000:user,,,:/home/user:/bin/bash -> I extract the 6th field delimited by ":" (user's home path)
@@ -721,6 +726,16 @@ success_message() {
   echo $(tput setaf 220)[lightning]:$(tput sgr 0) $(tput setaf 0)$(tput setab 2) $1 $(tput sgr 0)
 }
 
+kill_evince() {
+    EVINCE_PID=$(ps -ef | awk '/evince.*lightning/{ if ($9 ~ "local/lightning") print $2;}')
+    if [ -z "$EVINCE_PID" ]
+    then
+	error_message "No scenario picture"
+    else
+	kill -9 $EVINCE_PID
+	success_message "Closed scenario picture"
+    fi
+}
 
 # usage: lightning_stop
 # description: executes stop_containers and delete_networks and sfter that deletes both log files
@@ -730,14 +745,17 @@ lightning_stop() {
   then
     stop_containers
     delete_networks
+    kill_evince
     success_message "Scenario successfully stopped"
   elif [ -e $CONTAINERS_CREATED_FILE ]
   then
     stop_containers
+    kill_evince
     success_message "Scenario successfully stopped"
   elif [ -e $NETWORKS_CREATED_FILE ]
   then
     delete_networks
+    kill_evince
     success_message "Scenario successfully stopped"
   else
     error_message "There is currently no scenario running to be stopped"

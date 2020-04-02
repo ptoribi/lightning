@@ -30,11 +30,16 @@
 
 #echo "lightning-launcher --> logname: $(logname)"
 #echo "lightning-launcher --> whoami:  $(whoami)"
+# work_around
+function log_name() {
+    [ -n "$SUDO_USER" ] && echo $SUDO_USER
+    [ -z "$SUDO_USER" ] && id -un
+}
 
 # ptoribi: "which" will find in the path the full location of the executable, "readlink -f" will resolve all possible symbolic links and "dirname" will remove the last component (file name).
 # In the default case: /usr/local/bin/lightning -> /usr/local/lightning/lightning-launcher -> /usr/local/lightning
 LIGHTNING_INSTALLATION_PATH=$(dirname $(readlink -f $(which lightning)))
-USER_BEHIND_SUDO=$(logname)
+USER_BEHIND_SUDO=$(log_name)
 USER_BEHIND_SUDO_HOME_PATH=$(getent passwd $USER_BEHIND_SUDO | cut -d : -f 6)
 source $LIGHTNING_INSTALLATION_PATH/variables.conf
 
@@ -76,21 +81,21 @@ then
   exit
 fi
 
-if [ $(logname) != "root" -a $(whoami) != "root" ]
+if [ $(log_name) != "root" -a $(whoami) != "root" ]
 then
   # ptoribi: the program was executed as a regular user
   # I use "$@" for propagating all the arguments among scripts.
   mkdir -p $SHARED_FOLDER
   sudo $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 
-elif [ $(logname) != "root" -a $(whoami) == "root" ]
+elif [ $(log_name) != "root" -a $(whoami) == "root" ]
 then
   # ptoribi: the program was executed as a regular user with sudo
   # I use "$@" for propagating all the arguments among scripts.
   mkdir -p $SHARED_FOLDER
   $LIGHTNING_INSTALLATION_PATH/lightning "$@"
 
-elif [ $(logname) == "root" -a $(whoami) == "root" ]
+elif [ $(log_name) == "root" -a $(whoami) == "root" ]
 then
   # ptoribi: the program was executed as root directly
   echo $(tput setaf 220)[lightning-launcher]:$(tput sgr 0) $(tput setaf 0)$(tput setab 1) Execution of this program directly as root is not supported. $(tput sgr 0)
