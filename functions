@@ -176,7 +176,8 @@ disable_ipv6() {
   local CONTAINER_NAME=$1
   local INTERFACE_NAME=$2
 
-  ip netns exec $CONTAINER_NAME sysctl -w net.ipv6.conf.$INTERFACE_NAME.disable_ipv6=1 > /dev/null
+  # ptoribi: with sysctl dots should not be used as some eth interfaces contain a dot in their name (e.g. eth0.0), use slashes instead
+  ip netns exec $CONTAINER_NAME sysctl -w net/ipv6/conf/$INTERFACE_NAME/disable_ipv6=1 > /dev/null
 }
 
 
