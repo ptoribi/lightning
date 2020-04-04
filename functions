@@ -176,7 +176,7 @@ disable_ipv6() {
   local CONTAINER_NAME=$1
   local INTERFACE_NAME=$2
 
-  ip netns exec $CONTAINER_NAME sysctl -w net.ipv6.conf.$INTERFACE_NAME.disable_ipv6=1
+  ip netns exec $CONTAINER_NAME sysctl -w net.ipv6.conf.$INTERFACE_NAME.disable_ipv6=1 > /dev/null
 }
 
 
