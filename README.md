@@ -1,7 +1,7 @@
 # :zap: lightning :zap:
 The simple and lightweight network simulator based on Docker containers
 
-![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png) 
+![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png)
 
 ![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot2.png)
 
@@ -95,5 +95,20 @@ For stopping the last executed network scenario:
 ```
 $ lightning stop
 ```
-## Author       
+## Author
 **Pablo Toribio** (under supervision of Dr. C.J. Bernardos Cano)
+
+# EXTRAS
+
+In specific cases, the terminals to access the lightning devices need to be launched from outside the VM.
+
+In this case, add
+
+```
+REMOTE=1
+```
+
+to `variables.conf`. When executing `lightning start <scenario>`,
+the Docker commands to access the different devices will be printed out
+to the console. You can then pipe these commands into a script to launch
+local terminals to SSH into the VM and execute the Docker scripts.
