@@ -608,7 +608,13 @@ display_host() {
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> $LIGHTNING_GENERAL_LOG_FILE
 
   #xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
-  mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+  # paaguti: if REMOTE=1, just print the Docker commands for an external program
+  if [ $REMOTE -ne 1 ]
+  then
+    mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+  else
+    echo "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO"
+  fi
 }
 
 
@@ -633,7 +639,13 @@ display_router() {
   docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/quagga start" >> $LIGHTNING_GENERAL_LOG_FILE
 
   #xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
-  mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+  # paaguti: if REMOTE=1, just print the Docker commands for an external program
+  if [ $REMOTE -ne 1 ]
+  then
+    mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+  else
+    echo "docker exec -i -t $ROUTER_NAME vtysh_persistent"
+  fi
 }
 
 
