@@ -613,7 +613,7 @@ display_host() {
   then
     mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
   else
-    echo "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO"
+    echo "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" | tee -a $USER_BEHIND_SUDO_HOME_PATH/commands
   fi
 }
 
@@ -644,7 +644,7 @@ display_router() {
   then
     mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
   else
-    echo "docker exec -i -t $ROUTER_NAME vtysh_persistent"
+    echo "docker exec -i -t $ROUTER_NAME vtysh_persistent" | tee -a $USER_BEHIND_SUDO_HOME_PATH/commands
   fi
 }
 
