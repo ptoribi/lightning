@@ -741,13 +741,13 @@ success_message() {
 }
 
 kill_evince() {
+	[ $REMOTE -eq 1 ] && return
     EVINCE_PID=$(ps -ef | awk '/evince.*lightning/{ if ($9 ~ "local/lightning") print $2;}')
-    if [ -z "$EVINCE_PID" ]
-    then
-	error_message "No scenario picture"
+    if [ -z "$EVINCE_PID" ]; then
+		error_message "No scenario picture"
     else
-	kill -9 $EVINCE_PID
-	success_message "Closed scenario picture"
+		kill -9 $EVINCE_PID
+		success_message "Closed scenario picture"
     fi
 }
 
