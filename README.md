@@ -44,9 +44,8 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 ```bash
 $ git clone https://github.com/ptoribi/lightning.git
 ```
-**or this forkfor the scenario verbaliser, which is not yet integrated in the original SW**
-
-``` bash
+* **or this forkfor the scenario verbaliser, which is not yet integrated in the original SW**
+```bash
 $ git clone https://github.com/paaguti/lightning.git
 ```
 
@@ -56,53 +55,53 @@ In order to set the location where the application folder and the symlink to the
 Please ensure before installing that those paths are included in your system's PATH variable. If you have no special needs the default values just work well.
 
 * **Install Lightning**
-```
+```bash
 $ sudo lightning/install
 ```
 
 ## After the installation:
 The user "root" should not execute Lightning directly, only regular users should. Regular users must execute Lightning with root privileges, this can be done by using **one** of these four different ways:
 
-* **Adding the specific user to the sudo group (warning!, that user will be allowed to execute all the programs in the system as root):**
-```
-$ sudo usermod -a -G sudo USER_NAME
+* **Adding the current user to the sudo group (warning!, that user will be allowed to execute all the programs in the system as root):**
+```bash
+$ sudo usermod -a -G sudo $(whoami)
 ```
 * **Allowing that specific user to execute Lightning:**
-```
+```bash
 $ sudo bash -c "echo 'USER_NAME ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 ```
 * **Creating a new group and allowing all its members to execute Lightning, then adding the specific user to that group:**
-```
+```bash
 $ sudo groupadd GROUP_NAME
 $ sudo bash -c "echo '%GROUP_NAME ALL=NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 $ sudo usermod -a -G GROUP_NAME USER_NAME
 ```
 * **Allowing all the users in the system to execute Lightning:**
-```
+```bash
 $ sudo bash -c "echo 'ALL ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 ```
 
 ## Uninstall the program
-```
+```bash
 $ sudo $(dirname $(readlink -f $(which lightning)))/uninstall
 ```
 
 ## How to use the program
 The XML files describing the scenarios must be stored in the folder "scenarios" inside
 the lightning installation folder, some default examples are provided. You can access it by executing:
-```
+```bash
 $ cd $(dirname $(readlink -f $(which lightning)))/scenarios
 ```
 For executing lightning, just type as a regular user in a shell:
-```
+```bash
 $ lightning
 ```
 For starting a network scenario:
-```
+```bash
 $ lightning start SCENARIO_NAME
 ```
 For stopping the last executed network scenario:
-```
+```bash
 $ lightning stop
 ```
 ## Author
@@ -114,11 +113,14 @@ In specific cases, the terminals to access the lightning devices need to be laun
 
 In this case, add
 
-```
+```bash
 REMOTE=1
 ```
 
 to `variables.conf`. When executing `lightning start <scenario>`,
 the Docker commands to access the different devices will be printed out
-to the console. You can then pipe these commands into a script to launch
-local terminals to SSH into the VM and execute the Docker scripts.
+to the console and to the file `$HOME/commands`. 
+You can then feed this into a script to launch local terminals to SSH
+into the VM and execute the Docker scripts.
+Additionally, the file `$HOME/description.txt` will be created with
+a textual description of the scenario (in Spanish currently).
