@@ -31,16 +31,26 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 ```
 * **other utilities** that may probably be already installed in your OS:
 ```
-# apt-get install sudo bash x11-utils libc-bin coreutils iproute2 iptables mawk sed
+# apt-get install sudo bash x11-utils libc-bin coreutils iproute2 iptables mawk sed python3 python3-pip
+```
+* **Python dependencies** for the scenario verbaliser:
+``` bash
+# python3 -m pip install --update pip
+# python3 -m pip install lxml
 ```
 
 ## Install the program
-* **Get the last version of the project**
-```
+* **Get the last version of the original project**
+```bash
 $ git clone https://github.com/ptoribi/lightning.git
 ```
-* **Change default locations** (Optional)
+**or this forkfor the scenario verbaliser, which is not yet integrated in the original SW**
 
+``` bash
+$ git clone https://github.com/paaguti/lightning.git
+```
+
+* **Change default locations** (Optional)
 In order to set the location where the application folder and the symlink to the main program will be installed, you can change inside the **lightning/install** file the variables **LIGHTNING_INSTALLATION_DIRECTORY** and **SYMLINK_INSTALLATION_DIRECTORY**.
 
 Please ensure before installing that those paths are included in your system's PATH variable. If you have no special needs the default values just work well.
