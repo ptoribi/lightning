@@ -57,13 +57,16 @@ else
       lightning_purge
       if [ $? == 0 ]
       then
-        information_message "Launching selected scenario..."
+          information_message "Launching selected scenario..."
+	  else
+          error_message "Failed purging the system..."
+		  return
       fi
     fi
     # ptoribi: execute scenario and show related .pdf file if present in "scenarios"
 	# paaguti: start with the .XML scenarios (supported by REMOTE mode)
 	#
-    if [-e $SCENARIOS_PATH/$2.xml ]; then
+    if [ -e $SCENARIOS_PATH/$2.xml ]; then
 
       # ptoribi: I add the root to the list of local users allowed to make connections to the X server
       [ $REMOTE -ne 1 ] && xhost +SI:localuser:root >> /dev/null
