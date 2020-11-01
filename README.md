@@ -26,7 +26,7 @@ A complete guide for installing Docker can be found in the official documentatio
 On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your distro and follow the instructions.
 
 * **utilities**: brctl (command line tool for ethernet bridges manipulation), xmllint (XML parser), evince (PDF viewer), git
-```
+```bash
 # apt-get install bridge-utils libxml2-utils evince git mate-terminal
 ```
 * **other utilities** that may probably be already installed in your OS:
@@ -119,7 +119,7 @@ REMOTE=1
 
 to `variables.conf`. When executing `lightning start <scenario>`,
 the Docker commands to access the different devices will be printed out
-to the console and to the file `$HOME/commands`. 
+to the console and to the file `$HOME/commands`.
 You can then feed this into a script to launch local terminals to SSH
 into the VM and execute the Docker scripts.
 Additionally, the file `$HOME/description.txt` will be created with
