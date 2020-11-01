@@ -56,7 +56,7 @@ then
   # ptoribi: create symbolic link, by default: /usr/local/bin/lightning ----> /usr/local/lightning-launcher
   ln -sf $LIGHTNING_INSTALLATION_DIRECTORY/lightning/lightning-launcher $SYMLINK_INSTALLATION_DIRECTORY/lightning
 
-  echo $(tput setaf 0)$(tput setab 2) "Lightnig was properly installed" $(tput sgr 0)
+  echo $(tput setaf 0)$(tput setab 2) "Lightning was properly installed" $(tput sgr 0)
 
   # ptoribi: get the last version of the scenarios from the GitHub repository
   rm -rf $GITHUB_SCENARIOS $LIGHTNING_INSTALLATION_DIRECTORY/lightning/scenarios
@@ -75,5 +75,5 @@ then
   docker pull $DOCKER_IMAGE_router
 
 else
-  echo $(tput setaf 0)$(tput setab 1) "Lightnig has to be installed as root or using "sudo"" $(tput sgr 0)
+  echo $(tput setaf 0)$(tput setab 1) "Lightning has to be installed as root or using "sudo"" $(tput sgr 0)
 fi
