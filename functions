@@ -856,8 +856,8 @@ read_xml() {
   xmllint --schema $XSD_FILE $XML_FILE --noout >> $LIGHTNING_GENERAL_LOG_FILE
   if [ $? == 0 ]
   then
-    # if not remote, but everything OK
-    # show the scenario if the PDF is available
+	  # XML OK
+    # paaguti: if local show the scenario if the PDF is available
     if [ $REMOTE -ne 1 ]; then
       [ -e $SCENARIOS_PATH/$2.pdf ] && evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
     fi

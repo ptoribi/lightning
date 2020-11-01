@@ -11,7 +11,7 @@
 ##    project site:   https://github.com/ptoribi/lightning                                   ##
 ##                                                                                           ##
 ##    file description:  main program file -> displays menu, starts selected scenario,       ##
-##                       stops already launched scenario or purges the system                ##       
+##                       stops already launched scenario or purges the system                ##
 ##                                                                                           ##
 ##    usage:             not to be used directly, but summoned by "lightning-launcher" file  ##
 ##                                                                                           ##
@@ -61,57 +61,36 @@ else
       fi
     fi
     # ptoribi: execute scenario and show related .pdf file if present in "scenarios"
-    if [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
-    then
+	# paaguti: start with the .XML scenarios (supported by REMOTE mode)
+	#
+    if [-e $SCENARIOS_PATH/$2.xml ]; then
 
       # ptoribi: I add the root to the list of local users allowed to make connections to the X server
-      xhost +SI:localuser:root >> /dev/null
-    
-      if [ -e $SCENARIOS_PATH/$2.pdf ]
-      then
-        evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
-      fi
-      
-      if [ -e $SCENARIOS_PATH/$2.xml ]
-      then
-        # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
-        # ptoribi: time will measure how much time takes the commmand to complete
-        time read_xml $SCENARIOS_PATH/$2.xml
-        echo ""
-      else
+      [ $REMOTE -ne 1 ] && xhost +SI:localuser:root >> /dev/null
+
+	  # moved to read_xml
+      # if [ -e $SCENARIOS_PATH/$2.pdf ]
+      # then
+      #   evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
+      # fi
+
+      # if [ -e $SCENARIOS_PATH/$2.xml ]
+      # then
+      # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
+      # ptoribi: time will measure how much time takes the commmand to complete
+      time read_xml $SCENARIOS_PATH/$2.xml
+      echo ""
+    elif [ -e $SCENARIOS_PATH/$2 ]; then
+		if [ $REMOTE -eq 1 ]; then
+			error_message "REMOTE scenarios not supported (yet) by Lightning (TODO)"
+			return
+		fi
+	    [ -e $SCENARIOS_PATH/$2.pdf ] && evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
+
         # --- LAUNCHING SELECTED SCENARIO, DIRECT FUNCTIONS EXECUTION ---
         # ptoribi: time will measure how much time the commmand takes to complete
         time $SCENARIOS_PATH/$2
         echo ""
-      fi
-      
-    # ptoribi: execute scenario and show related .pdf file if present in "scenarios-local"
-    elif [[ -e $SCENARIOS_PATH_LOCAL/$2 || -e $SCENARIOS_PATH_LOCAL/$2.xml ]]
-    then
-
-      # ptoribi: I add the root to the list of local users allowed to make connections to the X server
-      xhost +SI:localuser:root >> /dev/null
-
-      if [ -e $SCENARIOS_PATH_LOCAL/$2.pdf ]
-      then
-        # ptoribi: adding 2>/dev/null at the end of the command redirects filehandle 2 (STDERR) to /dev/null
-        # taken from https://unix.stackexchange.com/questions/192042/how-do-i-suppress-error-messages-from-cp
-        evince $SCENARIOS_PATH_LOCAL/$2.pdf 2>/dev/null &
-      fi
-      
-      if [ -e $SCENARIOS_PATH_LOCAL/$2.xml ]
-      then
-        # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
-        # ptoribi: time will measure how much time takes the commmand to complete
-        time read_xml $SCENARIOS_PATH_LOCAL/$2.xml
-        echo ""
-      else
-        # --- LAUNCHING SELECTED SCENARIO, DIRECT FUNCTIONS EXECUTION ---
-        # ptoribi: time will measure how much time the commmand takes to complete
-        time $SCENARIOS_PATH_LOCAL/$2
-        echo ""
-      fi
-  
     else
       # Display usage message
       echo ""
