@@ -856,7 +856,11 @@ read_xml() {
   xmllint --schema $XSD_FILE $XML_FILE --noout >> $LIGHTNING_GENERAL_LOG_FILE
   if [ $? == 0 ]
   then
-
+    # if not remote, but everything OK
+    # show the scenario if the PDF is available
+    if [ $REMOTE -ne 1 ]; then
+      [ -e $SCENARIOS_PATH/$2.pdf ] && evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
+    fi
     # ptoribi: READ CONTAINERS
     CONTAINER=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@name)' $XML_FILE)
     while [[ ${#CONTAINER} -ne 0 ]]
@@ -874,11 +878,11 @@ read_xml() {
          CONTAINER_INTERFACE_enable_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@enable_ipv6)' $XML_FILE)
         # ptoribi: set default value for @enable_ipv6
         if [[ ${#CONTAINER_INTERFACE_enable_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_enable_ipv6="yes"; fi
-        
+
         CONTAINER_INTERFACE_link_local_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@link_local_ipv6)' $XML_FILE)
         # ptoribi: set default value for @link_local_ipv6
         if [[ ${#CONTAINER_INTERFACE_link_local_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_link_local_ipv6="yes"; fi
-        
+
         CONTAINER_INTERFACE_connected_to_physical_interface=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@connected_to_physical_interface)' $XML_FILE)
         if [[ ${#CONTAINER_INTERFACE_connected_to_physical_interface} -ne 0 ]]
         then
@@ -898,7 +902,7 @@ read_xml() {
           clear_interface $CONTAINER $CONTAINER_INTERFACE
         fi
         #echo "  "$CONTAINER_INTERFACE $(tput setaf 240)\(enable_ipv6=\"$CONTAINER_INTERFACE_enable_ipv6\", link_local_ipv6=\"$CONTAINER_INTERFACE_link_local_ipv6\"\)$(tput sgr 0)
-        
+
         CONTAINER_INTERFACE_DEFAULT_IP=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface[./@name="'"$CONTAINER_INTERFACE"'"]/default_ip['$CONTAINER_INTERFACE_DEFAULT_IP_INDEX'])' $XML_FILE)
         while [[ ${#CONTAINER_INTERFACE_DEFAULT_IP} -ne 0 ]]
         do
@@ -986,7 +990,11 @@ read_xml() {
         display_router ${CONTAINER_NAME_ARRAY[index]} ${CONTAINER_HOSTNAME_ARRAY[index]}
       fi
     done
-
+    if [ $REMOTE -eq 1 ]; then
+      $LIGHTNING_INSTALLATION_PATH/scenario2txt $XML_FILE > $USER_BEHIND_SUDO_HOME_PATH/description.txt
+      chown $USER:$USER $USER_BEHIND_SUDO_HOME_PATH/commands
+      chown $USER:$USER $USER_BEHIND_SUDO_HOME_PATH/description.txt
+    fi
     success_message "Scenario successfully launched"
 
   else
