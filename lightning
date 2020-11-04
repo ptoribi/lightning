@@ -27,6 +27,28 @@ source $LIGHTNING_INSTALLATION_PATH/personalized_functions
 
 #echo $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO is executing Lightning, please enjoy!
 
+#paaguti: add a flag to enable/disable remote launching
+while getopts ":hR:" opt; do
+	case $opt in
+		h|\?)
+			help $
+			if [ "$opt" == "h"]; then
+				usage_message
+			fi
+			return 1
+			;;
+		R)
+			# Delete the old value for REMOTE if is exists
+			sed -i '/REMOTE/d' $LIGHTNING_INSTALLATION_PATH/variables.conf
+			# Add the new value at the end of the variable.conf file for future use
+			printf 'REMOTE=%d\n' $OPTARG >> $LIGHTNING_INSTALLATION_PATH/variables.conf
+			# Reload the configuration
+			source $LIGHTNING_INSTALLATION_PATH/variables.conf
+			;;
+	esac
+done
+shift $((OPTIND - 1))
+
 # ptoribi: create folder for storing the logs
 mkdir -p $LOGS_LOCATION
 

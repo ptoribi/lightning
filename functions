@@ -143,12 +143,15 @@ usage_message() {
   echo ""
   echo "$(tput setaf 220)[lightning]$(tput sgr 0) usage:"
   echo ""
-  echo "  $(tput setaf 6)lightning                  $(tput sgr 0)-> display usage message and list available scenarios"
+  echo "  $(tput setaf 6)lightning [-h]             $(tput sgr 0)-> display usage message and list available scenarios"
   echo "  $(tput setaf 6)lightning stop             $(tput sgr 0)-> close running scenario"
   echo "  $(tput setaf 6)lightning purge            $(tput sgr 0)-> ONLY use this option in case \"stop\" doesn't work"
-  echo "  $(tput setaf 6)lightning start $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
+  echo "  $(tput setaf 6)lightning start [flags]    $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
   echo "  $(tput setaf 196)lightning update           $(tput sgr 0)-> update Lightning to the latest version available"
   echo ""
+  echo "  flags:"
+  echo "    $(tput setaf 6)-R 0         $(tput sgr 0) set REMOTE to 0 for future sessions and start in local mode"
+  echo "    $(tput setaf 6)-R 1         $(tput sgr 0) set REMOTE to 1 for future sessions and start in accesible mode"
   echo "  Available scenarios:"
   #list_scenarios_in_directory $SCENARIOS_PATH
   explore_scenarios
