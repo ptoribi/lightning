@@ -825,6 +825,8 @@ lightning_purge() {
 read_xml() {
 
   local XML_FILE=$1
+  #paaguti: The scenario and the wallpaper are in the same directory
+  local WALLPAPER=${XML_FILE%.xml}.pdf
 
   # ptoribi: list of indexes for reading containers (one scenario may contain several containers, one container may contain several interfaces, one interface may contain several default IPs)
   local CONTAINER_INDEX=1
@@ -861,8 +863,8 @@ read_xml() {
   then
 	  # XML OK
     # paaguti: if local show the scenario if the PDF is available
-    if [ $REMOTE -ne 1 ]; then
-      [ -e $SCENARIOS_PATH/$2.pdf ] && evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
+    if [ $REMOTE -eq 0 ]; then
+      [ -e $WALLPAPER ] && evince $WALLPAPER 2>/dev/null &
     fi
     # ptoribi: READ CONTAINERS
     CONTAINER=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@name)' $XML_FILE)
@@ -993,6 +995,9 @@ read_xml() {
         display_router ${CONTAINER_NAME_ARRAY[index]} ${CONTAINER_HOSTNAME_ARRAY[index]}
       fi
     done
+	#
+	# paaguti: create the description and make files accessible to user
+	#
     if [ $REMOTE -eq 1 ]; then
       $LIGHTNING_INSTALLATION_PATH/scenario2txt $XML_FILE > $USER_BEHIND_SUDO_HOME_PATH/description.txt
       chown $USER:$USER $USER_BEHIND_SUDO_HOME_PATH/commands
