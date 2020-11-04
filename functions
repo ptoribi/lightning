@@ -183,6 +183,17 @@ disable_ipv6() {
   ip netns exec $CONTAINER_NAME sysctl -w net/ipv6/conf/$INTERFACE_NAME/disable_ipv6=1 > /dev/null
 }
 
+# description: enables ipv4 reverse path for one interface in the specified container (container should have been started in "privileged" mode)
+# usage:   enable_rpath CONTAINER_NAME INTERFACE_NAME
+# example: enable_rpath pc1 eth1
+enable_rpath() {
+
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+
+  # ptoribi: with sysctl dots should not be used as some eth interfaces contain a dot in their name (e.g. eth0.0), use slashes instead
+  ip netns exec $CONTAINER_NAME sysctl -w net/ipv4/conf/$INTERFACE_NAME/rp_filter=0 > /dev/null
+}
 
 # description: clears all IP addresses present in the selected interface
 # usage: clear_interface CONTAINER_NAME INTERFACE_NAME
@@ -349,7 +360,8 @@ create_host() {
   # with "--cap-drop=ALL" I will drop all capabilities in order to have full control by adding one by one
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
-  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none \
+  --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv4.conf.all.rp_filter=1 \
   -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
   $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
 
@@ -430,7 +442,9 @@ create_router() {
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # --sysctl net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
-  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.all.forwarding=1 --sysctl net.ipv6.conf.default.forwarding=1 \
+  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none \
+  --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.all.forwarding=1 \
+  --sysctl net.ipv6.conf.default.forwarding=1 --sysctl net.ipv4.conf.all.rp_filter=1 \
   --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
@@ -888,6 +902,10 @@ read_xml() {
         # ptoribi: set default value for @link_local_ipv6
         if [[ ${#CONTAINER_INTERFACE_link_local_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_link_local_ipv6="yes"; fi
 
+         CONTAINER_INTERFACE_rpath_filter=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@rpath_filter)' $XML_FILE)
+        # ptoribi: set default value for @enable_ipv6
+        if [[ ${#CONTAINER_INTERFACE_rpath_filter} -eq 0 ]]; then CONTAINER_INTERFACE_rpath_filter="yes"; fi
+
         CONTAINER_INTERFACE_connected_to_physical_interface=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@connected_to_physical_interface)' $XML_FILE)
         if [[ ${#CONTAINER_INTERFACE_connected_to_physical_interface} -ne 0 ]]
         then
@@ -907,6 +925,12 @@ read_xml() {
           clear_interface $CONTAINER $CONTAINER_INTERFACE
         fi
         #echo "  "$CONTAINER_INTERFACE $(tput setaf 240)\(enable_ipv6=\"$CONTAINER_INTERFACE_enable_ipv6\", link_local_ipv6=\"$CONTAINER_INTERFACE_link_local_ipv6\"\)$(tput sgr 0)
+
+        # disable reverse path filter
+        if [ $CONTAINER_INTERFACE_rpath_filter == "no" ]
+        then
+          enable_rpath $CONTAINER $CONTAINER_INTERFACE
+        fi
 
         CONTAINER_INTERFACE_DEFAULT_IP=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface[./@name="'"$CONTAINER_INTERFACE"'"]/default_ip['$CONTAINER_INTERFACE_DEFAULT_IP_INDEX'])' $XML_FILE)
         while [[ ${#CONTAINER_INTERFACE_DEFAULT_IP} -ne 0 ]]
