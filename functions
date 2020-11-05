@@ -1048,3 +1048,13 @@ read_xml() {
     error_message "$XML_FILE validation error, the file does not comply with the Lightning XML Schema"
   fi
 }
+
+function get_scenario_fullname()
+{
+  LOCAL XML_FILE=$1
+
+  for d in $SCENARIOS_PATH_LOCAL $SCENARIOS_PATH
+  do
+    [ -e $d/$XML_FILE ] && echo $d/$XML_FILE
+  done
+}
