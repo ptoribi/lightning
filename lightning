@@ -87,9 +87,9 @@ else
     fi
     # ptoribi: execute scenario and show related .pdf file if present in "scenarios"
     # paaguti: start with the .XML scenarios (supported by REMOTE mode)
-    #
-    local XML_FILE = $(get_scenario_fullname $2.xml)
-    local SCRIPT_FILE = $(get_scenario_fullname $2)
+    # paaguti: try to find the scanrio file in the local scenarios first and then in the global scenarios
+    XML_FILE=$(get_scenario_fullname $2.xml)
+    SCRIPT_FILE=$(get_scenario_fullname $2)
     if [ -n "$XML_FILE" ]; then
 
       # ptoribi: I add the root to the list of local users allowed to make connections to the X server

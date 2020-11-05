@@ -1049,12 +1049,15 @@ read_xml() {
   fi
 }
 
+#paaguti: look for file $1 in the local scenarios and the global scenarios
+#         print if found
+#        "$(get_scenario_fullname <file>)" is an empty string if not found!
 function get_scenario_fullname()
 {
-  LOCAL XML_FILE=$1
+  local XML_FILE=$1
 
   for d in $SCENARIOS_PATH_LOCAL $SCENARIOS_PATH
   do
-    [ -e $d/$XML_FILE ] && echo $d/$XML_FILE
+    [ -e $d/$XML_FILE ] && echo "$d/$XML_FILE"
   done
 }
