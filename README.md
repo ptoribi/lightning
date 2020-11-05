@@ -111,16 +111,22 @@ $ lightning stop
 
 In specific cases, the terminals to access the lightning devices need to be launched from outside the VM.
 
-In this case, add
+In this case, when executing `lightning start <scenario>`, the Docker commands to access the different devices
+will be printed out to the console and to the file `$HOME/commands`.
+You can then feed this file into a script that launches local terminals in the host, which docker through SSH
+into the VM and access the different containers.
+Additionally, lightning will create the file `$HOME/description.txt` with a textual description of the scenario
+(in Spanish currently).
 
-```bash
-REMOTE=1
+Check the value for `REMOTE` in `variables.conf`. If set to `0`, it will work inside the VM, launching the terminals and presenting the scenario wallpaper. If set to `1` lightning will start inside the VM, but expect the terminals
+to access the containers to be executed in the host.
+
+You can change the value of the `REMOTE` variable by launching `lightning` with the `-R` flag:
+
+``` bash
+lightning -R <value for REMOTE> start <scenario>
 ```
 
-to `variables.conf`. When executing `lightning start <scenario>`,
-the Docker commands to access the different devices will be printed out
-to the console and to the file `$HOME/commands`.
-You can then feed this into a script to launch local terminals to SSH
-into the VM and execute the Docker scripts.
-Additionally, the file `$HOME/description.txt` will be created with
-a textual description of the scenario (in Spanish currently).
+The value should be `0` or `1`  and will be kept until the next `lightning update`.
+
+The default value for `REMOTE` is `0`
