@@ -44,7 +44,7 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 ```bash
 $ git clone https://github.com/ptoribi/lightning.git
 ```
-* **or this fork for the scenario verbaliser, which is not yet integrated in the original SW**
+* **or this forkfor the scenario verbaliser, which is not yet integrated in the original SW**
 ```bash
 $ git clone https://github.com/paaguti/lightning.git
 ```
@@ -111,12 +111,12 @@ $ lightning stop
 
 In specific cases, the terminals to access the lightning devices need to be launched from outside the VM.
 
-You can set the `REMOTE` variable in `/usr/local/lightning/variables.conf` to control this behaviour.
+In this case, add
 
-Add (or set if present)
 ```bash
 REMOTE=1
 ```
+
 to `variables.conf`. When executing `lightning start <scenario>`,
 the Docker commands to access the different devices will be printed out
 to the console and to the file `$HOME/commands`.
@@ -124,14 +124,3 @@ You can then feed this into a script to launch local terminals to SSH
 into the VM and execute the Docker scripts.
 Additionally, the file `$HOME/description.txt` will be created with
 a textual description of the scenario (in Spanish currently).
-
-If you call lightning with
-```bash
-lightning -R 1 start <scenario>
-```
-you start and set `REMOTE=1` in `variables.conf` for future executions until you update lightning again.
-
-To start and set `REMOTE=0` for this and subsequent executions,
-```bash
-lightning -R 0 start <scenario>
-```
