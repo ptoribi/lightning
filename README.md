@@ -107,7 +107,9 @@ $ lightning stop
 ## Author
 **Pablo Toribio** (under supervision of Dr. C.J. Bernardos Cano)
 
-# EXTRAS
+# EXTRAS (paaguti)
+
+## Remote execution of lightning
 
 In specific cases, the terminals to access the lightning devices need to be launched from outside the VM.
 
@@ -130,3 +132,7 @@ lightning -R <value for REMOTE> start <scenario>
 The value should be `0` or `1`  and will be kept until the next `lightning update`.
 
 The default value for `REMOTE` is `0`
+
+## sysctl customisation
+
+Customisation for the sysctl.conf files inside the containers is provided by `/usr/local/lightning/sysctl-router.conf` for *router* containers and `/usr/local/lightning/sysctl-host.conf` for *host* containers. These files provide a way to define the *default*  values of specific variables. Manipulation is still handled by `lightning`.
