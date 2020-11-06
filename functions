@@ -62,6 +62,22 @@ version_header() {
   echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
 }
 
+#paaguti:
+# usage: $(get_sysctl <container_type>)
+# description: read the special sysctls from $LIGHTNING_INSTALLATION_PATH/sysctl.conf
+# and generate the --sysctl <value> ... parameters
+
+function get_sysctl() {
+  DEFFILE=$LIGHTNING_INSTALLATION_PATH/sysctl-$1.conf
+
+  [ -e $DEFFILE ] || echo "WARNING: $DEFFILE not found!"
+  [ -e $DEFFILE ] || return
+
+  while IFS= read -r -u13 line; do
+    printf " --sysctl %s " "$line"
+  done 13<"$DEFFILE"
+}
+
 # usage: explore_scenarios
 # description: explore all the directories in $SCENARIOS_PATH_LOCAL and $SCENARIOS_PATH listing all the available scenarios
 # NOTE: this function only supports one directory depth level from $SCENARIOS_PATH_LOCAL and $SCENARIOS_PATH
@@ -375,7 +391,7 @@ create_host() {
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # --sysctl net.ipv4.conf.all.rp_filter=0 disables reverse path filtering (and allows asymmetric routing)
-  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv4.conf.all.rp_filter=0 \
+  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none $(get_sysctl host) \
          -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
          $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
 
@@ -457,7 +473,7 @@ create_router() {
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # --sysctl net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
   # --sysctl net.ipv4.conf.all.rp_filter=0 disables reverse path filtering (and allows asymmetric routing)
-  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.all.forwarding=1 --sysctl net.ipv6.conf.default.forwarding=1 --sysctl net.ipv4.conf.all.rp_filter=0 \
+  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none $(get_sysctl router) \
          --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
