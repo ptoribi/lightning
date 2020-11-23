@@ -52,6 +52,15 @@ else
   SHARED_FOLDER=$USER_BEHIND_SUDO_HOME_PATH/$SHARED_FOLDER_NAME
 fi
 
+# paaguti: When REMOTE=1, cleanup the file holding the docker commands
+if [ $REMOTE -eq 1 ]
+then
+  for f in commands description.txt
+  do
+    [ -f $USER_BEHIND_SUDO_HOME_PATH/$f ] && rm -f $USER_BEHIND_SUDO_HOME_PATH/$f
+  done
+fi
+
 # ptoribi: configure the console to use 256 colors
 export TERM=xterm-256color
 

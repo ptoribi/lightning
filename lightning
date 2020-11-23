@@ -11,7 +11,7 @@
 ##    project site:   https://github.com/ptoribi/lightning                                   ##
 ##                                                                                           ##
 ##    file description:  main program file -> displays menu, starts selected scenario,       ##
-##                       stops already launched scenario or purges the system                ##       
+##                       stops already launched scenario or purges the system                ##
 ##                                                                                           ##
 ##    usage:             not to be used directly, but summoned by "lightning-launcher" file  ##
 ##                                                                                           ##
@@ -26,6 +26,28 @@ source $LIGHTNING_INSTALLATION_PATH/functions
 source $LIGHTNING_INSTALLATION_PATH/personalized_functions
 
 #echo $USER_BEHIND_SUDO:$GROUP_OF_USER_BEHIND_SUDO is executing Lightning, please enjoy!
+
+#paaguti: add a flag to enable/disable remote launching
+while getopts ":hR:" opt; do
+    case $opt in
+        h|\?)
+            help $
+            if [ "$opt" == "h"]; then
+                usage_message
+            fi
+            return 1
+            ;;
+        R)
+            # Delete the old value for REMOTE if is exists
+            sed -i '/REMOTE/d' $LIGHTNING_INSTALLATION_PATH/variables.conf
+            # Add the new value at the end of the variable.conf file for future use
+            printf 'REMOTE=%d\n' $OPTARG >> $LIGHTNING_INSTALLATION_PATH/variables.conf
+            # Reload the configuration
+            source $LIGHTNING_INSTALLATION_PATH/variables.conf
+            ;;
+    esac
+done
+shift $((OPTIND - 1))
 
 # ptoribi: create folder for storing the logs
 mkdir -p $LOGS_LOCATION
@@ -42,7 +64,7 @@ else
   then
     lightning_stop
     # ptoribi: I remove the root from the list of local users allowed to make connections to the X server
-    xhost -SI:localuser:root >> /dev/null
+    [ $REMOTE -eq 0 ] && xhost -SI:localuser:root >> /dev/null
   # Purge
   elif [ "$#" -eq 1 ] && [ $1 == "purge" ]
   then
@@ -57,61 +79,45 @@ else
       lightning_purge
       if [ $? == 0 ]
       then
-        information_message "Launching selected scenario..."
+          information_message "Launching selected scenario..."
+      else
+          error_message "Failed purging the system..."
+          return
       fi
     fi
     # ptoribi: execute scenario and show related .pdf file if present in "scenarios"
-    if [[ -e $SCENARIOS_PATH/$2 || -e $SCENARIOS_PATH/$2.xml ]]
-    then
+    # paaguti: start with the .XML scenarios (supported by REMOTE mode)
+    # paaguti: try to find the scanrio file in the local scenarios first and then in the global scenarios
+    XML_FILE=$(get_scenario_fullname $2.xml)
+    SCRIPT_FILE=$(get_scenario_fullname $2)
+    if [ -n "$XML_FILE" ]; then
 
       # ptoribi: I add the root to the list of local users allowed to make connections to the X server
-      xhost +SI:localuser:root >> /dev/null
-    
-      if [ -e $SCENARIOS_PATH/$2.pdf ]
-      then
-        evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
-      fi
-      
-      if [ -e $SCENARIOS_PATH/$2.xml ]
-      then
-        # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
-        # ptoribi: time will measure how much time takes the commmand to complete
-        time read_xml $SCENARIOS_PATH/$2.xml
-        echo ""
-      else
+      [ $REMOTE -ne 1 ] && xhost +SI:localuser:root >> /dev/null
+
+      # moved to read_xml
+      # if [ -e $SCENARIOS_PATH/$2.pdf ]
+      # then
+      #   evince $SCENARIOS_PATH/$2.pdf 2>/dev/null &
+      # fi
+
+      # if [ -e $SCENARIOS_PATH/$2.xml ]
+      # then
+      # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
+      # ptoribi: time will measure how much time takes the commmand to complete
+      time read_xml $XML_FILE
+      echo ""
+    elif [ -n "$SCENARIO_FILE" ]; then
+        if [ $REMOTE -eq 1 ]; then
+            error_message "REMOTE scenarios not supported (yet) by Lightning (TODO)"
+            return
+        fi
+        [ -e $SCENARIO_FILE.pdf ] && evince $SCENARIO_FILE.pdf 2>/dev/null &
+
         # --- LAUNCHING SELECTED SCENARIO, DIRECT FUNCTIONS EXECUTION ---
         # ptoribi: time will measure how much time the commmand takes to complete
-        time $SCENARIOS_PATH/$2
+        time $SCENARIO_FILE
         echo ""
-      fi
-      
-    # ptoribi: execute scenario and show related .pdf file if present in "scenarios-local"
-    elif [[ -e $SCENARIOS_PATH_LOCAL/$2 || -e $SCENARIOS_PATH_LOCAL/$2.xml ]]
-    then
-
-      # ptoribi: I add the root to the list of local users allowed to make connections to the X server
-      xhost +SI:localuser:root >> /dev/null
-
-      if [ -e $SCENARIOS_PATH_LOCAL/$2.pdf ]
-      then
-        # ptoribi: adding 2>/dev/null at the end of the command redirects filehandle 2 (STDERR) to /dev/null
-        # taken from https://unix.stackexchange.com/questions/192042/how-do-i-suppress-error-messages-from-cp
-        evince $SCENARIOS_PATH_LOCAL/$2.pdf 2>/dev/null &
-      fi
-      
-      if [ -e $SCENARIOS_PATH_LOCAL/$2.xml ]
-      then
-        # --- LAUNCHING SELECTED SCENARIO, XML PARSING ---
-        # ptoribi: time will measure how much time takes the commmand to complete
-        time read_xml $SCENARIOS_PATH_LOCAL/$2.xml
-        echo ""
-      else
-        # --- LAUNCHING SELECTED SCENARIO, DIRECT FUNCTIONS EXECUTION ---
-        # ptoribi: time will measure how much time the commmand takes to complete
-        time $SCENARIOS_PATH_LOCAL/$2
-        echo ""
-      fi
-  
     else
       # Display usage message
       echo ""

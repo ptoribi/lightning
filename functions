@@ -19,8 +19,8 @@
 #echo "functions --> whoami:  $(whoami)"
 
 function log_name() {
-    [ -n "$SUDO_USER" ] && echo $SUDO_USER
-    [ -z "$SUDO_USER" ] && id -un
+  [ -n "$SUDO_USER" ] && echo $SUDO_USER
+  [ -z "$SUDO_USER" ] && id -un
 }
 
 # User-related variables
@@ -60,6 +60,22 @@ version_header() {
   echo "      $(tput setaf 33)**$(tput setaf 45)    Universidad Carlos III de Madrid (UC3M)    $(tput setaf 33)**$(tput sgr 0)"
   echo "      $(tput setaf 33)**$(tput setaf 45)              Lightning $(cat $LIGHTNING_INSTALLATION_PATH/version)                  $(tput setaf 33)**$(tput sgr 0)"
   echo "      $(tput setaf 33)***************************************************$(tput sgr 0)"
+}
+
+#paaguti:
+# usage: $(get_sysctl <container_type>)
+# description: read the special sysctls from $LIGHTNING_INSTALLATION_PATH/sysctl.conf
+# and generate the --sysctl <value> ... parameters
+
+function get_sysctl() {
+  DEFFILE=$LIGHTNING_INSTALLATION_PATH/sysctl-$1.conf
+
+  [ -e $DEFFILE ] || echo "WARNING: $DEFFILE not found!"
+  [ -e $DEFFILE ] || return
+
+  while IFS= read -r -u13 line; do
+    printf " --sysctl %s " "$line"
+  done 13<"$DEFFILE"
 }
 
 # usage: explore_scenarios
@@ -134,7 +150,7 @@ list_scenarios_in_directory() {
     else
       echo "  $(tput setaf 154) ${FILE_NAME%.*}$(tput sgr 0) - $(tput setaf 244)$DESCRIPTION $(tput sgr 0)"
     fi
- done
+  done
 }
 
 # usage: usage_message
@@ -143,12 +159,15 @@ usage_message() {
   echo ""
   echo "$(tput setaf 220)[lightning]$(tput sgr 0) usage:"
   echo ""
-  echo "  $(tput setaf 6)lightning                  $(tput sgr 0)-> display usage message and list available scenarios"
+  echo "  $(tput setaf 6)lightning [-h]             $(tput sgr 0)-> display usage message and list available scenarios"
   echo "  $(tput setaf 6)lightning stop             $(tput sgr 0)-> close running scenario"
   echo "  $(tput setaf 6)lightning purge            $(tput sgr 0)-> ONLY use this option in case \"stop\" doesn't work"
-  echo "  $(tput setaf 6)lightning start $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
+  echo "  $(tput setaf 6)lightning start [flags]    $(tput setaf 154)$(tput smul)SCENARIO$(tput rmul)   $(tput sgr 0)-> start selected network scenario"
   echo "  $(tput setaf 196)lightning update           $(tput sgr 0)-> update Lightning to the latest version available"
   echo ""
+  echo "  flags:"
+  echo "    $(tput setaf 6)-R 0         $(tput sgr 0) set REMOTE to 0 for future sessions and start in local mode"
+  echo "    $(tput setaf 6)-R 1         $(tput sgr 0) set REMOTE to 1 for future sessions and start in accesible mode"
   echo "  Available scenarios:"
   #list_scenarios_in_directory $SCENARIOS_PATH
   explore_scenarios
@@ -180,6 +199,18 @@ disable_ipv6() {
   ip netns exec $CONTAINER_NAME sysctl -w net/ipv6/conf/$INTERFACE_NAME/disable_ipv6=1 > /dev/null
 }
 
+# description: enables ipv4 reverse path for one interface in the specified container (container should have been started in "privileged" mode)
+# usage:   set_rp_filter CONTAINER_NAME INTERFACE_NAME 0/1
+# example: set_rp_filter pc1 eth1 1
+set_rp_filter() {
+
+  local CONTAINER_NAME=$1
+  local INTERFACE_NAME=$2
+  local RP_FILTER=$3
+
+  # ptoribi: with sysctl dots should not be used as some eth interfaces contain a dot in their name (e.g. eth0.0), use slashes instead
+  ip netns exec $CONTAINER_NAME sysctl -w net/ipv4/conf/$INTERFACE_NAME/rp_filter=$RP_FILTER > /dev/null
+}
 
 # description: enables ipv4 reverse path filtering for one interface in the specified container (container should have been started in "privileged" mode)
 # usage:   enable_rp_filter CONTAINER_NAME INTERFACE_NAME
@@ -243,7 +274,7 @@ create_network() {
 
     information_message "Network segment $NET_NAME successfully created"
   else
-      error_message "Network segment $NET_NAME already exists"
+    error_message "Network segment $NET_NAME already exists"
   fi
 
   if [ $TYPE == "hub" ]
@@ -372,9 +403,9 @@ create_host() {
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # --sysctl net.ipv4.conf.all.rp_filter=0 disables reverse path filtering (and allows asymmetric routing)
-  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv4.conf.all.rp_filter=0 --sysctl net.ipv4.conf.default.rp_filter=0 \
-  -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
-  $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
+  docker run -t -d --rm --name=$HOST_NAME --hostname=$HOST_NAME_LONG --net=none $(get_sysctl host) \
+         -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $SHARED_FOLDER:/home/$USER_BEHIND_SUDO --cap-drop=ALL \
+         $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_host >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create user inside the container with same uid:gid as the one executing this program
   docker exec --user=root $HOST_NAME groupadd --gid $(id -g $GROUP_OF_USER_BEHIND_SUDO) $GROUP_OF_USER_BEHIND_SUDO
@@ -454,8 +485,8 @@ create_router() {
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # --sysctl net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
     # --sysctl net.ipv4.conf.all.rp_filter=0 disables reverse path filtering (and allows asymmetric routing)
-  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.all.forwarding=1 --sysctl net.ipv6.conf.default.forwarding=1 --sysctl net.ipv4.conf.all.rp_filter=0 --sysctl net.ipv4.conf.default.rp_filter=0 \
-  --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
+  docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none $(get_sysctl router) \
+         --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
   # ptoribi: create links for accessing the network namespace
   local CONTAINER_PID=`docker inspect -f '{{.State.Pid}}' $ROUTER_NAME`
@@ -621,21 +652,27 @@ configure_ip() {
 # example: display_host h1 host1
 display_host() {
 
- local HOST_NAME=$1
+  local HOST_NAME=$1
 
- if [ "$#" -eq 2 ]
- then
-   local XTERM_WINDOW_TITLE=$2
- else
-   local XTERM_WINDOW_TITLE=$1
- fi
+  if [ "$#" -eq 2 ]
+  then
+    local XTERM_WINDOW_TITLE=$2
+  else
+    local XTERM_WINDOW_TITLE=$1
+  fi
 
   # ptoribi: start ssh and telnet service in order to allow incoming connections
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/ssh start" >> $LIGHTNING_GENERAL_LOG_FILE
   docker exec --user=root $HOST_NAME bash -c "/etc/init.d/xinetd start" >> $LIGHTNING_GENERAL_LOG_FILE
 
   #xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
-  mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+  # paaguti: if REMOTE=1, just print the Docker commands for an external program
+  if [ $REMOTE -ne 1 ]
+  then
+    mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" &
+  else
+    echo "docker exec -i -t --user=$USER_BEHIND_SUDO $HOST_NAME bash_persistent $USER_BEHIND_SUDO" | tee -a $USER_BEHIND_SUDO_HOME_PATH/commands
+  fi
 }
 
 
@@ -644,14 +681,14 @@ display_host() {
 # example: display_router r1 router1
 display_router() {
 
- local ROUTER_NAME=$1
+  local ROUTER_NAME=$1
 
- if [ "$#" -eq 2 ]
- then
-   local XTERM_WINDOW_TITLE=$2
- else
-   local XTERM_WINDOW_TITLE=$1
- fi
+  if [ "$#" -eq 2 ]
+  then
+    local XTERM_WINDOW_TITLE=$2
+  else
+    local XTERM_WINDOW_TITLE=$1
+  fi
 
   # ptoribi: start ssh and telnet service in order to allow incoming connections
   docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/ssh start" >> $LIGHTNING_GENERAL_LOG_FILE
@@ -660,7 +697,13 @@ display_router() {
   docker exec --user=root $ROUTER_NAME bash -c "/etc/init.d/quagga start" >> $LIGHTNING_GENERAL_LOG_FILE
 
   #xterm -T "$XTERM_WINDOW_TITLE" -e "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
-  mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+  # paaguti: if REMOTE=1, just print the Docker commands for an external program
+  if [ $REMOTE -ne 1 ]
+  then
+    mate-terminal --hide-menubar --title="$XTERM_WINDOW_TITLE" --command "docker exec -i -t $ROUTER_NAME vtysh_persistent" &
+  else
+    echo "docker exec -i -t $ROUTER_NAME vtysh_persistent" | tee -a $USER_BEHIND_SUDO_HOME_PATH/commands
+  fi
 }
 
 
@@ -756,14 +799,14 @@ success_message() {
 }
 
 kill_evince() {
-    EVINCE_PID=$(ps -ef | awk '/evince.*lightning/{ if ($9 ~ "local/lightning") print $2;}')
-    if [ -z "$EVINCE_PID" ]
-    then
-	error_message "No scenario picture"
-    else
-	kill -9 $EVINCE_PID
-	success_message "Closed scenario picture"
-    fi
+  [ $REMOTE -eq 1 ] && return
+  EVINCE_PID=$(ps -ef | awk '/evince.*lightning/{ if ($9 ~ "local/lightning") print $2;}')
+  if [ -z "$EVINCE_PID" ]; then
+    error_message "No scenario picture"
+  else
+    kill -9 $EVINCE_PID
+    success_message "Closed scenario picture"
+  fi
 }
 
 # usage: lightning_stop
@@ -837,6 +880,8 @@ lightning_purge() {
 read_xml() {
 
   local XML_FILE=$1
+  #paaguti: The scenario and the wallpaper are in the same directory
+  local WALLPAPER=${XML_FILE%.xml}.pdf
 
   # ptoribi: list of indexes for reading containers (one scenario may contain several containers, one container may contain several interfaces, one interface may contain several default IPs)
   local CONTAINER_INDEX=1
@@ -871,7 +916,11 @@ read_xml() {
   xmllint --schema $XSD_FILE $XML_FILE --noout >> $LIGHTNING_GENERAL_LOG_FILE
   if [ $? == 0 ]
   then
-
+    # XML OK
+    # paaguti: if local show the scenario if the PDF is available
+    if [ $REMOTE -eq 0 ]; then
+      [ -e $WALLPAPER ] && evince $WALLPAPER 2>/dev/null &
+    fi
     # ptoribi: READ CONTAINERS
     CONTAINER=$(xmllint --xpath 'string(/scenario/container['$CONTAINER_INDEX']/@name)' $XML_FILE)
     while [[ ${#CONTAINER} -ne 0 ]]
@@ -886,7 +935,7 @@ read_xml() {
       CONTAINER_INTERFACE=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@name)' $XML_FILE)
       while [[ ${#CONTAINER_INTERFACE} -ne 0 ]]
       do
-         CONTAINER_INTERFACE_enable_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@enable_ipv6)' $XML_FILE)
+        CONTAINER_INTERFACE_enable_ipv6=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface['$CONTAINER_INTERFACE_INDEX']/@enable_ipv6)' $XML_FILE)
         # ptoribi: set default value for @enable_ipv6
         if [[ ${#CONTAINER_INTERFACE_enable_ipv6} -eq 0 ]]; then CONTAINER_INTERFACE_enable_ipv6="yes"; fi
 
@@ -918,13 +967,12 @@ read_xml() {
         fi
         #echo "  "$CONTAINER_INTERFACE $(tput setaf 240)\(enable_ipv6=\"$CONTAINER_INTERFACE_enable_ipv6\", link_local_ipv6=\"$CONTAINER_INTERFACE_link_local_ipv6\"\)$(tput sgr 0)
 
-        # cjbc: disable rp_filter by default
-        disable_rp_filter $CONTAINER $CONTAINER_INTERFACE
-
         # enable reverse path filter
         if [ $CONTAINER_INTERFACE_rpath_filter == "yes" ]
         then
-          enable_rp_filter $CONTAINER $CONTAINER_INTERFACE
+          set_rp_filter $CONTAINER $CONTAINER_INTERFACE 1
+        else
+          set_rp_filter $CONTAINER $CONTAINER_INTERFACE 0
         fi
 
         CONTAINER_INTERFACE_DEFAULT_IP=$(xmllint --xpath 'string(/scenario/container[./@name="'"$CONTAINER"'"]/interface[./@name="'"$CONTAINER_INTERFACE"'"]/default_ip['$CONTAINER_INTERFACE_DEFAULT_IP_INDEX'])' $XML_FILE)
@@ -1014,10 +1062,30 @@ read_xml() {
         display_router ${CONTAINER_NAME_ARRAY[index]} ${CONTAINER_HOSTNAME_ARRAY[index]}
       fi
     done
-
+    #
+    # paaguti: create the description and make files accessible to user
+    #
+    if [ $REMOTE -eq 1 ]; then
+      $LIGHTNING_INSTALLATION_PATH/scenario2txt $XML_FILE > $USER_BEHIND_SUDO_HOME_PATH/description.txt
+      chown $USER:$USER $USER_BEHIND_SUDO_HOME_PATH/commands
+      chown $USER:$USER $USER_BEHIND_SUDO_HOME_PATH/description.txt
+    fi
     success_message "Scenario successfully launched"
 
   else
     error_message "$XML_FILE validation error, the file does not comply with the Lightning XML Schema"
   fi
+}
+
+#paaguti: look for file $1 in the local scenarios and the global scenarios
+#         print if found
+#        "$(get_scenario_fullname <file>)" is an empty string if not found!
+function get_scenario_fullname()
+{
+  local XML_FILE=$1
+
+  for d in $SCENARIOS_PATH_LOCAL $SCENARIOS_PATH
+  do
+    [ -e $d/$XML_FILE ] && echo "$d/$XML_FILE"
+  done
 }
