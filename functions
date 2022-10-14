@@ -484,7 +484,7 @@ create_router() {
   # the capabilities present in the file SECURITY_SUDO_COMMANDS_FILE will the only ones added to the containers
   # --sysctl net.ipv6.conf.all.disable_ipv6=0 enables IPv6
   # --sysctl net.ipv6.conf.all.forwarding=1 enables IPv6 forwarding
-    # --sysctl net.ipv4.conf.all.rp_filter=0 disables reverse path filtering (and allows asymmetric routing)
+  # --sysctl net.ipv4.conf.all.rp_filter=0 disables reverse path filtering (and allows asymmetric routing)
   docker run -t -d --rm --name=$ROUTER_NAME --hostname=$ROUTER_NAME_LONG --net=none $(get_sysctl router) \
          --cap-drop=ALL $CAP_ADD_CHAIN_LIST $DOCKER_IMAGE_router >> $LIGHTNING_GENERAL_LOG_FILE
 
@@ -804,7 +804,8 @@ kill_evince() {
   if [ -z "$EVINCE_PID" ]; then
     error_message "No scenario picture"
   else
-    kill -9 $EVINCE_PID
+    kill $EVINCE_PID 2> /dev/null
+    wait $EVINCE_PID 2> /dev/null
     success_message "Closed scenario picture"
   fi
 }
