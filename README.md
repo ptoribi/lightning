@@ -1,9 +1,9 @@
 # :zap: lightning :zap:
 The simple and lightweight network simulator based on Docker containers
 
-![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot1.png)
+![Preview](https://raw.githubusercontent.com/paaguti/lightning/master/screenshots/screenshot1.png)
 
-![Preview](https://raw.githubusercontent.com/ptoribi/lightning/master/screenshots/screenshot2.png)
+![Preview](https://raw.githubusercontent.com/paaguti/lightning/master/screenshots/screenshot2.png)
 
 ## About lightning
 Lightning is a simple and lightweight network simulator based on Docker containers.
@@ -44,7 +44,7 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 ```bash
 $ git clone https://github.com/ptoribi/lightning.git
 ```
-* **or this forkfor the scenario verbaliser, which is not yet integrated in the original SW**
+* **or this fork for the scenario verbaliser and ARM68v8, which are not yet integrated in the original project**
 ```bash
 $ git clone https://github.com/paaguti/lightning.git
 ```
@@ -136,3 +136,7 @@ The default value for `REMOTE` is `0`
 ## sysctl customisation
 
 Customisation for the sysctl.conf files inside the containers is provided by `/usr/local/lightning/sysctl-router.conf` for *router* containers and `/usr/local/lightning/sysctl-host.conf` for *host* containers. These files provide a way to define the *default*  values of specific variables. Manipulation is still handled by `lightning`.
+
+## support for the ARM64v8 architecture
+
+Pulls the new multi-arch router and host images. This new version can be used on x86_64/amd64 and arm68v8 architectures (like Apple silicon).
