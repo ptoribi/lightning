@@ -10,7 +10,7 @@ Additionally you will need a Ubuntu 22.04 LTS image for ARM you can download fro
 
 ## Launching UTM and creating a Ubuntu VM.
 
-- Select creating a virtual machine that uses virtualisation and then the Linux target.
+Select creating a virtual machine that uses virtualisation and then the Linux target.
   - Give the VM a minimum of 4 GBytes of RAM and 40 GBytes for the hard disk
   - Attach the .iso image you downloaded to a virtual CDROM device
   - Boot the machine and follow the installation instructions
@@ -18,6 +18,8 @@ Additionally you will need a Ubuntu 22.04 LTS image for ARM you can download fro
   - Once the installation process is finished
     1. shutdown the VM with the `sudo shutdown` command in the default user
     2. eject the CDROM image from UTM
+
+A good reference is provided in the [UTM VM gallery][https://mac.getutm.app/gallery/ubuntu-20-04]
 
 ## Installing the prerequisites for lightning
 
