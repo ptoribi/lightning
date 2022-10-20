@@ -24,21 +24,21 @@ A good reference is provided in the [UTM VM gallery][https://mac.getutm.app/gall
 ## Installing the prerequisites for lightning
 
 1. Refresh the package list with
-   ```
-sudo apt update
-   ```
+
+   ```sudo apt update```
+   
 2. Add your user to the sudoers in order to avoid sudo asking for the password when invoked
-   ```
-echo "$whoami: (ALL=ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$(whoami)
-   ```
+   
+   ```echo "$whoami: (ALL=ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$(whoami)```
+   
 3. Upgrade the packages
-   ```
-sudo apt upgrade -y
-   ```
+   
+   ```sudo apt upgrade -y```
+   
 4. Install the XFCE desktop and additional tools
-   ```
-sudo apt install -y ubuntu-xfce-desktop git nano
-   ```
+   
+   ```sudo apt install -y ubuntu-xfce-desktop git nano```
+   
 5. Reboot the VM to get the desktop running
 
 6. Launch a terminal and proceed to install `lightning` as described in the `README.md` file.
