@@ -1,6 +1,6 @@
 # Installing `lightning` on Apple silicon
 
-*CAVEAT EMPTOR* This is just one possible path to installation, there may be other.
+*CAVEAT EMPTOR* This is just one possible path to installation, there may be others.
 
 ## Prerequisites
 
