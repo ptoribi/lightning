@@ -27,26 +27,32 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 
 * **utilities**: brctl (command line tool for ethernet bridges manipulation), xmllint (XML parser), evince (PDF viewer), git
 ```bash
-# apt-get install bridge-utils libxml2-utils evince git mate-terminal
+apt-get install bridge-utils libxml2-utils evince git mate-terminal
 ```
 * **other utilities** that may probably be already installed in your OS:
 ```
-# apt-get install sudo bash x11-utils libc-bin coreutils iproute2 iptables mawk sed python3 python3-pip
+apt-get install sudo bash x11-utils libc-bin coreutils iproute2 iptables mawk sed python3 python3-pip
 ```
 * **Python dependencies** for the scenario verbaliser:
 ``` bash
-# python3 -m pip install --update pip
-# python3 -m pip install lxml
+python3 -m pip install --upgrade pip
+python3 -m pip install lxml
+```
+** **Python** extra to get access to utilities installed with pip:
+Add the following line to your `.bash_aliases` or `.zshenv` file if you haven't before
+
+```bash
+export PATH=$HOME/.local/bin:$PATH
 ```
 
 ## Install the program
 * **Get the last version of the original project**
 ```bash
-$ git clone https://github.com/ptoribi/lightning.git
+git clone https://github.com/ptoribi/lightning.git
 ```
 * **or this fork for the scenario verbaliser and ARM68v8, which are not yet integrated in the original project**
 ```bash
-$ git clone https://github.com/paaguti/lightning.git
+git clone https://github.com/paaguti/lightning.git
 ```
 
 * **Change default locations** (Optional)
@@ -56,7 +62,7 @@ Please ensure before installing that those paths are included in your system's P
 
 * **Install Lightning**
 ```bash
-$ sudo lightning/install
+sudo lightning/install
 ```
 
 ## After the installation:
@@ -64,45 +70,45 @@ The user "root" should not execute Lightning directly, only regular users should
 
 * **Adding the current user to the sudo group (warning!, that user will be allowed to execute all the programs in the system as root):**
 ```bash
-$ sudo usermod -a -G sudo $(whoami)
+sudo usermod -a -G sudo $(whoami)
 ```
 * **Allowing that specific user to execute Lightning:**
 ```bash
-$ sudo bash -c "echo 'USER_NAME ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
+sudo bash -c "echo 'USER_NAME ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 ```
 * **Creating a new group and allowing all its members to execute Lightning, then adding the specific user to that group:**
 ```bash
-$ sudo groupadd GROUP_NAME
-$ sudo bash -c "echo '%GROUP_NAME ALL=NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
-$ sudo usermod -a -G GROUP_NAME USER_NAME
+sudo groupadd GROUP_NAME
+sudo bash -c "echo '%GROUP_NAME ALL=NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
+sudo usermod -a -G GROUP_NAME USER_NAME
 ```
 * **Allowing all the users in the system to execute Lightning:**
 ```bash
-$ sudo bash -c "echo 'ALL ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
+sudo bash -c "echo 'ALL ALL=(ALL) NOPASSWD: $(dirname $(readlink -f $(which lightning)))"/lightning"' >> /etc/sudoers"
 ```
 
 ## Uninstall the program
 ```bash
-$ sudo $(dirname $(readlink -f $(which lightning)))/uninstall
+sudo $(dirname $(readlink -f $(which lightning)))/uninstall
 ```
 
 ## How to use the program
 The XML files describing the scenarios must be stored in the folder "scenarios" inside
 the lightning installation folder, some default examples are provided. You can access it by executing:
 ```bash
-$ cd $(dirname $(readlink -f $(which lightning)))/scenarios
+cd $(dirname $(readlink -f $(which lightning)))/scenarios
 ```
 For executing lightning, just type as a regular user in a shell:
 ```bash
-$ lightning
+lightning
 ```
 For starting a network scenario:
 ```bash
-$ lightning start SCENARIO_NAME
+lightning start SCENARIO_NAME
 ```
 For stopping the last executed network scenario:
 ```bash
-$ lightning stop
+lightning stop
 ```
 ## Author
 **Pablo Toribio** (under supervision of Dr. C.J. Bernardos Cano)
