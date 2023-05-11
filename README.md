@@ -50,15 +50,14 @@ export PATH=$HOME/.local/bin:$PATH
 ```bash
 git clone https://github.com/ptoribi/lightning.git
 ```
-* **or this fork for the scenario verbaliser and ARM68v8, which are not yet integrated in the original project**
+* **or this fork for the scenario verbaliser**
 ```bash
 git clone https://github.com/paaguti/lightning.git
 ```
 
-* **Change default locations** (Optional)
-In order to set the location where the application folder and the symlink to the main program will be installed, you can change inside the **lightning/install** file the variables **LIGHTNING_INSTALLATION_DIRECTORY** and **SYMLINK_INSTALLATION_DIRECTORY**.
+* Change default locations **(Optional)** : You may change the location where the application folder and the symlink to the main program will be installed, by changing  the variables **LIGHTNING_INSTALLATION_DIRECTORY** and **SYMLINK_INSTALLATION_DIRECTORY** in the **lightning/install** file.
 
-Please ensure before installing that those paths are included in your system's PATH variable. If you have no special needs the default values just work well.
+Please ensure before installing that both directories are included in your system's PATH variable. It is safe to keep the default values in most cases.
 
 * **Install Lightning**
 ```bash
