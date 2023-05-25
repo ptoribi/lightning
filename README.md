@@ -35,7 +35,7 @@ On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your d
 ```
 * **Python dependencies** for the scenario verbaliser:
 ``` bash
-# python3 -m pip install --update pip
+# python3 -m pip install --upgrade pip
 # python3 -m pip install lxml
 ```
 
