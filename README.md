@@ -20,10 +20,8 @@ Debian 9 x86_64 (compatibility with more OS will be checked in the nearly future
 ## Before the installation
 Before installing Lightning please check that your OS counts with the following **dependencies**:
 
-* **docker-ce** (Docker Community Edition)
-A complete guide for installing Docker can be found in the official documentation of the project: https://docs.docker.com/
-
-On the left panel: **Get Docker** -> **Docker CE** -> **Linux** -> Select your distro and follow the instructions.
+* **docker-ce** (Docker Engine Community Edition)
+A complete guide for installing Docker can be found in the official documentation of the project: https://docs.docker.com/engine/install/ (on the left panel select your distro and follow the instructions).
 
 * **utilities**: brctl (command line tool for ethernet bridges manipulation), xmllint (XML parser), evince (PDF viewer), git
 ```bash
