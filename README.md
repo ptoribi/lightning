@@ -112,6 +112,10 @@ lightning stop
 
 # EXTRAS (paaguti)
 
+## Compatibilty
+
+The latest version of lightning has been tested on Ubuntu 22.04LTS.
+
 ## Remote execution of lightning
 
 In specific cases, the terminals to access the lightning devices need to be launched from outside the VM.
