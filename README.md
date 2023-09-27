@@ -146,4 +146,4 @@ Customisation for the sysctl.conf files inside the containers is provided by `/u
 
 ## support for the ARM64v8 architecture
 
-Pulls the new multi-arch router and host images. This new version can be used on x86_64/amd64 and arm68v8 architectures (like Apple silicon).
+Pulls the new multi-arch router and host images. This new version can be used on x86_64/amd64 and ARM aarch_64 architectures (like Apple silicon).
